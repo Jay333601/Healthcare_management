@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Campus &amp; hospital events – CareDesk</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700&family=Public+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<style>main{margin:0 auto;padding-top:36px}.ev>div:last-child{text-align:right}</style>
+</head>
+<body>
+<main>
+ <div class="head"><div><h2>Upcoming events</h2><p>Pick an event and register. Full events have a waitlist, and you are confirmed automatically if a seat opens.</p></div><a href="staff.html" style="color:var(--brand)">Staff sign in</a></div>
+ <div class="panel" id="list" aria-live="polite">Loading events…</div>
+</main>
+<dialog id="dlg"></dialog>
+<div id="toast" class="toast" role="status" hidden></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
+<script>
+const cfg=window.CAREDESK_CONFIG||{};
+const configured=!!cfg.SUPABASE_URL&&!/YOUR-PROJECT/.test(cfg.SUPABASE_URL)&&!!cfg.SUPABASE_ANON_KEY&&!/YOUR-ANON/.test(cfg.SUPABASE_ANON_KEY);
+const sb=window.supabase.createClient(cfg.SUPABASE_URL||'https://example.supabase.co',cfg.SUPABASE_ANON_KEY||'none');
+if(!configured)document.body.insertAdjacentHTML('afterbegin','<div style="background:#b83f36;color:#fff;padding:10px 16px;text-align:center;font:600 14px sans-serif">Setup needed: open <code>config.js</code> and paste your Supabase project URL and anon key.</div>');
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const today=()=>new Date().toLocaleDateString('en-CA');
+let E=[];
+function toast(t){const e=$('#toast');e.textContent=t;e.hidden=false;clearTimeout(toast.h);toast.h=setTimeout(()=>e.hidden=true,4500)}
+async function q(p){const {data,error}=await p;if(error)throw new Error(error.message||'Something went wrong. Please try again.');return data}
+async function load(){
+ try{E=await q(sb.from('public_events').select('*').gte('date',today()).order('date').order('start_time'));
+  $('#list').innerHTML=E.map(e=>{const full=e.confirmed>=e.capacity,x=new Date(e.date+'T00:00');
+   return `<div class="ev"><div class="date"><b>${x.getDate()}</b><span>${x.toLocaleString('en',{month:'short'})}</span></div>
+   <div><h4>${esc(e.title)}</h4><p>${esc(e.start_time)}–${esc(e.end_time)} · ${esc(e.venue)}</p><p style="margin:0">${esc(e.description)}</p>
+   <div class="bar" role="img" aria-label="${e.confirmed} of ${e.capacity} seats filled"><i class="${full?'full':''}" style="width:${Math.min(100,e.confirmed/e.capacity*100)}%"></i></div>
+   <p style="margin:4px 0 0">${Math.max(0,e.capacity-e.confirmed)} seats left ${full?'<span class="tag warn">Full – waitlist open</span>':''}</p></div>
+   <div><button class="btn sm" onclick="openReg(${e.id})">${full?'Join waitlist':'Register'}</button></div></div>`}).join('')||'<p class="empty">No upcoming events right now. Check back soon.</p>';
+ }catch(e){$('#list').textContent='Could not load events. Please refresh.'}
+}
+function openReg(id){
+ const e=E.find(x=>x.id==id);
+ $('#dlg').innerHTML=`<h3>${esc(e.title)}</h3><p style="color:var(--mute)">${esc(e.date)} · ${esc(e.start_time)}–${esc(e.end_time)} · ${esc(e.venue)}</p>
+ <form onsubmit="submitReg(event,${id})"><label>Full name<input name="name" required maxlength="100"></label><label>Email<input type="email" name="email" required></label>
+ <label>Department<select name="dept"><option>MBBS</option><option>Nursing</option><option>Pharmacy</option><option>Staff</option><option>Public</option></select></label>
+ <div class="full mt"><button class="btn">${e.confirmed>=e.capacity?'Join waitlist':'Register'}</button><button type="button" class="btn ghost" onclick="$('#dlg').close()">Cancel</button></div></form>`;
+ $('#dlg').showModal();
+}
+async function submitReg(ev,id){
+ ev.preventDefault();const f=Object.fromEntries(new FormData(ev.target));
+ try{const r=await q(sb.rpc('register_for_event',{p_event:id,p_name:f.name,p_email:f.email,p_dept:f.dept}));
+  $('#dlg').close();toast(r.waitlisted?'You are on the waitlist. We will confirm you if a seat opens.':'You are registered. See you there!');load();
+ }catch(e){toast(e.message)}
+}
+load();
+</script>
+</body>
+</html>

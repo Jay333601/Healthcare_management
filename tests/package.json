@@ -1,0 +1,11 @@
+{
+  "name": "caredesk-sql-tests",
+  "private": true,
+  "scripts": {
+    "test": "node sql-test.js && node ui-test.js"
+  },
+  "devDependencies": {
+    "@electric-sql/pglite": "^0.2.0",
+    "jsdom": "^25.0.0"
+  }
+}

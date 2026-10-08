@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>CareDesk – Staff portal</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700&family=Public+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<style>.login{max-width:360px;margin:12vh auto;padding:0 18px}.login form{grid-template-columns:1fr}nav .out{margin-top:16px;opacity:.7}</style>
+</head>
+<body>
+<div class="app" id="shell">
+<nav aria-label="Main">
+  <h1>CareDesk<small>Hospital &amp; event management</small></h1>
+  <div id="tabs"></div>
+</nav>
+<main id="view" tabindex="-1"></main>
+</div>
+<dialog id="dlg"></dialog>
+<div id="toast" class="toast" role="status" hidden></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
+<script>
+const cfg=window.CAREDESK_CONFIG||{};
+const configured=!!cfg.SUPABASE_URL&&!/YOUR-PROJECT/.test(cfg.SUPABASE_URL)&&!!cfg.SUPABASE_ANON_KEY&&!/YOUR-ANON/.test(cfg.SUPABASE_ANON_KEY);
+const sb=window.supabase.createClient(cfg.SUPABASE_URL||'https://example.supabase.co',cfg.SUPABASE_ANON_KEY||'none');
+if(!configured)document.body.insertAdjacentHTML('afterbegin','<div style="background:#b83f36;color:#fff;padding:10px 16px;text-align:center;font:600 14px sans-serif">Setup needed: open <code>config.js</code> and paste your Supabase project URL and anon key.</div>');
+
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const today=()=>new Date().toLocaleDateString('en-CA');
+let authed=false;
+let S={doctors:[],patients:[],appointments:[],events:[],messages:[]},tab='dash';
+const tabs=[['dash','Dashboard'],['events','Events'],['appts','Appointments'],['patients','Patients'],['doctors','Doctors'],['msgs','Messages']];
+
+function friendly(e){
+ const m=e.message||'Request failed.';
+ if(e.code==='23505'){if(/appointments_/.test(m))return 'That doctor already has a booking at this time.';if(/registrations_/.test(m))return 'This email is already registered for the event.';return 'That already exists.'}
+ if(e.code==='42501')return 'You do not have permission to do that. Sign in as staff.';
+ if(e.code==='23514')return 'Check the values you entered (for example, end time must be after start time).';
+ return m;
+}
+async function run(p){const {data,error}=await p;if(error)throw new Error(friendly(error));return data}
+function toast(t){const e=$('#toast');e.textContent=t;e.hidden=false;clearTimeout(toast.h);toast.h=setTimeout(()=>e.hidden=true,3200)}
+async function act(fn,ok){try{await fn();await load();render();if(ok)toast(ok)}catch(e){toast(e.message)}}
+const form=ev=>{ev.preventDefault();return Object.fromEntries(new FormData(ev.target))};
+const doc=id=>S.doctors.find(x=>x.id==id)||{name:'—'};
+const pat=id=>S.patients.find(x=>x.id==id)||{name:'—'};
+const fdate=s=>{const x=new Date(s+'T00:00');return{day:x.getDate(),mon:x.toLocaleString('en',{month:'short'})}};
+
+async function load(){
+ const [doctors,patients,appointments,events,messages]=await Promise.all([
+  run(sb.from('doctors').select('*').order('id')),
+  run(sb.from('patients').select('*').order('id')),
+  run(sb.from('appointments').select('*').order('date').order('time')),
+  run(sb.from('public_events').select('*').order('date').order('start_time')),
+  run(sb.from('messages').select('*').order('id',{ascending:false}).limit(200))]);
+ S={doctors,patients,appointments,events,messages};
+}
+function go(t){tab=t;render();$('#view').focus({preventScroll:true});window.scrollTo(0,0)}
+async function logout(){await sb.auth.signOut();authed=false;render()}
+
+function render(){
+ const shell=$('#shell');
+ if(!authed){
+  shell.style.display='block';$('nav').style.display='none';
+  $('#view').innerHTML=`<div class="login"><h2>CareDesk staff sign in</h2><p style="color:var(--mute)">Patients and students use the <a href="index.html" style="color:var(--brand)">public website</a>.</p>
+  <div class="panel"><form onsubmit="login(event)"><label>Email<input type="email" name="email" autocomplete="username" required></label><label>Password<input type="password" name="password" autocomplete="current-password" required></label><button class="btn">Sign in</button></form></div></div>`;
+  return;
+ }
+ shell.style.display='';$('nav').style.display='';
+ $('#tabs').innerHTML=tabs.map(([k,l])=>`<button class="${k==tab?'on':''}" onclick="go('${k}')" ${k==tab?'aria-current="page"':''}>${l}</button>`).join('')+`<button class="out" onclick="logout()">Sign out</button>`;
+ $('#view').innerHTML=({dash,events,appts,patients,doctors,msgs})[tab]();
+}
+async function login(ev){
+ const f=form(ev);
+ const {error}=await sb.auth.signInWithPassword({email:f.email,password:f.password});
+ if(error)return toast(error.message);
+ if(!await isStaff()){await sb.auth.signOut();return toast('This account is not set up as staff. Ask an administrator to add it to the staff list.')}
+ authed=true;try{await load();render()}catch(e){toast(e.message)}
+}
+async function isStaff(){const {data,error}=await sb.rpc('is_staff');return !error&&data===true}
+
+function evRow(e,admin){
+ const t=e.confirmed,f=t>=e.capacity,dt=fdate(e.date);
+ return `<div class="ev"><div class="date"><b>${dt.day}</b><span>${dt.mon}</span></div>
+ <div><h4>${esc(e.title)}</h4><p>${e.start_time}–${e.end_time} · ${esc(e.venue)}</p>
+ <div class="bar" role="img" aria-label="${t} of ${e.capacity} seats filled"><i class="${f?'full':''}" style="width:${Math.min(100,t/e.capacity*100)}%"></i></div>
+ <p style="margin:4px 0 0">${t}/${e.capacity} registered${e.waitlist?` · ${e.waitlist} on waitlist`:''} ${f?'<span class="tag warn">Full</span>':''}</p></div>
+ <div>${admin?`<button class="btn sm" onclick="openEvent(${e.id})">Manage</button>`:`<button class="btn ghost sm" onclick="go('events')">View</button>`}</div></div>`;
+}
+function dash(){
+ const adm=S.patients.filter(p=>p.status=='Admitted').length;
+ const ta=S.appointments.filter(a=>a.date==today());
+ const up=S.events.filter(e=>e.date>=today()).slice(0,3);
+ const regs=S.events.reduce((n,e)=>n+e.confirmed,0);
+ return `<div class="head"><div><h2>Good day, team</h2><p>What needs attention at the hospital and on campus today.</p></div></div>
+ <div class="stats"><div class="stat"><b>${adm}</b><span>Patients admitted</span></div><div class="stat"><b>${ta.length}</b><span>Appointments today</span></div><div class="stat"><b>${S.events.length}</b><span>Upcoming events</span></div><div class="stat"><b>${regs}</b><span>Event registrations</span></div><div class="stat"><b>${S.appointments.filter(a=>a.status=='Requested').length}</b><span>Appointment requests to confirm</span></div></div>
+ <div class="grid2"><div class="panel"><h3>Today's appointments</h3>${ta.length?`<div class="wrap"><table><tr><th>Time</th><th>Patient</th><th>Doctor</th></tr>${ta.map(a=>`<tr><td>${a.time}</td><td>${esc(pat(a.patient_id).name)}</td><td>${esc(doc(a.doctor_id).name)}</td></tr>`).join('')}</table></div>`:'<p class="empty">No appointments today. Book one from Appointments.</p>'}</div>
+ <div class="panel"><h3>Next events</h3>${up.map(e=>evRow(e,false)).join('')||'<p class="empty">No events scheduled.</p>'}</div></div>`;
+}
+
+function events(){
+ return `<div class="head"><div><h2>Events</h2><p>Create events, register people, avoid venue clashes and keep everyone informed. Share the <a href="events.html" style="color:var(--brand)">public events page</a> with students.</p></div></div>
+ <div class="panel"><h3>Schedule an event</h3><form onsubmit="addEvent(event)">
+ <label>Title<input name="title" required></label><label>Date<input type="date" name="date" min="${today()}" required></label>
+ <label>Start<input type="time" name="start" required></label><label>End<input type="time" name="end" required></label>
+ <label>Venue<select name="venue">${['Seminar Hall A','Seminar Hall B','Auditorium','Main Lobby','Skills Lab'].map(v=>`<option>${v}</option>`).join('')}</select></label>
+ <label>Capacity<input type="number" name="capacity" min="1" value="50" required></label>
+ <label class="full">Description<input name="desc"></label>
+ <div class="full"><button class="btn">Create event</button></div></form></div>
+ <div class="panel"><h3>All events</h3>${S.events.map(e=>evRow(e,true)).join('')||'<p class="empty">No events yet. Create one above.</p>'}</div>`;
+}
+function addEvent(ev){const f=form(ev);act(()=>run(sb.from('events').insert({title:f.title,date:f.date,start_time:f.start,end_time:f.end,venue:f.venue,capacity:+f.capacity,description:f.desc||''})),'Event created.')}
+async function openEvent(id){
+ try{
+  const e=S.events.find(x=>x.id==id),regs=await run(sb.from('registrations').select('*').eq('event_id',id).order('id'));
+  $('#dlg').innerHTML=`<h3>${esc(e.title)}</h3><p style="color:var(--mute);margin:4px 0 12px">${e.date} · ${e.start_time}–${e.end_time} · ${esc(e.venue)}<br>${esc(e.description||'')}</p>
+  <form onsubmit="register(event,${id})"><label>Name<input name="name" required></label><label>Email<input type="email" name="email" required></label>
+  <label>Department<select name="dept"><option>MBBS</option><option>Nursing</option><option>Pharmacy</option><option>Staff</option><option>Public</option></select></label>
+  <div class="full"><button class="btn">${e.confirmed>=e.capacity?'Join waitlist':'Register'}</button></div></form>
+  <h3 style="font-size:16px;margin:16px 0 6px">Registrations (${regs.length})</h3>
+  ${regs.length?`<div class="wrap"><table>${regs.map(r=>`<tr><td>${esc(r.name)}</td><td>${esc(r.dept)}</td><td>${r.waitlisted?'<span class="tag warn">Waitlist</span>':'<span class="tag ok">Confirmed</span>'}</td><td><button class="btn ghost sm" onclick="cancelReg(${id},${r.id})">Cancel</button></td></tr>`).join('')}</table></div>`:'<p class="empty">Nobody registered yet.</p>'}
+  <h3 style="font-size:16px;margin:16px 0 6px">Message registrants</h3>
+  <form onsubmit="notify(event,${id})"><textarea name="text" placeholder="e.g. Venue changed to Seminar Hall B" required></textarea><div class="full"><button class="btn">Send to ${regs.length} people</button></div></form>
+  <div class="mt"><button class="btn ghost" onclick="delEvent(${id})">Delete event</button><button class="btn ghost" onclick="$('#dlg').close()">Close</button></div>`;
+  if(!$('#dlg').open)$('#dlg').showModal();
+ }catch(e){toast(e.message)}
+}
+async function register(ev,id){const f=form(ev);try{const r=await run(sb.rpc('register_for_event',{p_event:id,p_name:f.name,p_email:f.email,p_dept:f.dept}));await load();render();toast(r.waitlisted?'Event is full. Added to the waitlist.':'Registered. Confirmation logged in Messages.');openEvent(id)}catch(e){toast(e.message)}}
+async function cancelReg(id,rid){try{await run(sb.rpc('cancel_registration',{p_reg:rid}));await load();render();toast('Registration cancelled.');openEvent(id)}catch(e){toast(e.message)}}
+async function notify(ev,id){const f=form(ev);try{await run(sb.rpc('notify_event',{p_event:id,p_text:f.text}));await load();render();$('#dlg').close();toast('Message sent.')}catch(e){toast(e.message)}}
+async function delEvent(id){if(!confirm('Delete this event and its registrations?'))return;$('#dlg').close();act(()=>run(sb.from('events').delete().eq('id',id)),'Event deleted.')}
+
+function appts(){
+ return `<div class="head"><div><h2>Appointments</h2><p>Requests from the public website appear here as Requested. Confirm them to notify the patient. Double-booking is blocked automatically.</p></div></div>
+ <div class="panel"><h3>Book an appointment</h3><form onsubmit="addAppt(event)">
+ <label>Patient<select name="patient">${S.patients.map(p=>`<option value="${p.id}">${esc(p.name)}</option>`).join('')}</select></label>
+ <label>Doctor<select name="doctor">${S.doctors.map(p=>`<option value="${p.id}">${esc(p.name)} – ${esc(p.dept)}</option>`).join('')}</select></label>
+ <label>Date<input type="date" name="date" min="${today()}" value="${today()}" required></label><label>Time<input type="time" name="time" required></label>
+ <div class="full"><button class="btn">Book appointment</button></div></form></div>
+ <div class="panel"><h3>Schedule</h3>${S.appointments.length?`<div class="wrap"><table><tr><th>Date</th><th>Time</th><th>Patient</th><th>Phone</th><th>Doctor</th><th>Status</th><th></th></tr>${S.appointments.map(a=>`<tr><td>${a.date}</td><td>${a.time}</td><td>${esc(pat(a.patient_id).name)}</td><td>${esc(pat(a.patient_id).phone||'')}</td><td>${esc(doc(a.doctor_id).name)}</td><td><span class="tag ${a.status=='Requested'?'warn':'ok'}">${a.status}</span></td><td>${a.status=='Requested'?`<button class="btn sm" onclick="confirmAppt(${a.id})">Confirm</button> `:''}<button class="btn ghost sm" onclick="delAppt(${a.id})">Cancel</button></td></tr>`).join('')}</table></div>`:'<p class="empty">Nothing booked yet.</p>'}</div>`;
+}
+function addAppt(ev){const f=form(ev);act(()=>run(sb.from('appointments').insert({patient_id:+f.patient,doctor_id:+f.doctor,date:f.date,time:f.time,status:'Confirmed'})),'Appointment booked.')}
+function confirmAppt(id){act(()=>run(sb.rpc('confirm_appointment',{p_id:id})),'Appointment confirmed. Patient message logged.')}
+function delAppt(id){act(()=>run(sb.from('appointments').delete().eq('id',id)),'Appointment cancelled.')}
+
+function patients(){
+ return `<div class="head"><div><h2>Patients</h2><p>Admissions, outpatients and assigned doctors.</p></div></div>
+ <div class="panel"><h3>Register a patient</h3><form onsubmit="addPat(event)">
+ <label>Name<input name="name" required></label><label>Age<input type="number" name="age" min="0" max="120" required></label><label>Phone<input name="phone" required></label>
+ <label>Status<select name="status"><option>Outpatient</option><option>Admitted</option></select></label>
+ <label>Ward<input name="ward" placeholder="Outpatient"></label>
+ <label>Doctor<select name="doctor">${S.doctors.map(p=>`<option value="${p.id}">${esc(p.name)}</option>`).join('')}</select></label>
+ <div class="full"><button class="btn">Add patient</button></div></form></div>
+ <div class="panel"><h3>Patient list</h3><div class="wrap"><table><tr><th>Name</th><th>Age</th><th>Phone</th><th>Ward</th><th>Doctor</th><th>Status</th><th></th></tr>
+ ${S.patients.map(p=>`<tr><td>${esc(p.name)}</td><td>${p.age||'—'}</td><td>${esc(p.phone)}</td><td>${esc(p.ward)}</td><td>${esc(doc(p.doctor_id).name)}</td><td><span class="tag ${p.status=='Admitted'?'warn':'ok'}">${p.status}</span></td><td>${p.status=='Admitted'?`<button class="btn ghost sm" onclick="discharge(${p.id})">Discharge</button>`:''}</td></tr>`).join('')}</table></div></div>`;
+}
+function addPat(ev){const f=form(ev);act(()=>run(sb.from('patients').insert({name:f.name,age:+f.age,phone:f.phone,status:f.status,ward:f.ward||f.status,doctor_id:+f.doctor})),'Patient added.')}
+function discharge(id){act(()=>run(sb.from('patients').update({status:'Outpatient',ward:'Outpatient'}).eq('id',id)),'Patient discharged.')}
+
+function doctors(){
+ return `<div class="head"><div><h2>Doctors</h2><p>Departments and today's load.</p></div></div>
+ <div class="panel"><h3>Add a doctor</h3><form onsubmit="addDoc(event)"><label>Name<input name="name" required></label><label>Department<input name="dept" required></label><div class="full"><button class="btn">Add doctor</button></div></form></div>
+ <div class="panel"><div class="wrap"><table><tr><th>Doctor</th><th>Department</th><th>Patients</th><th>Appointments today</th></tr>
+ ${S.doctors.map(x=>`<tr><td>${esc(x.name)}</td><td>${esc(x.dept)}</td><td>${S.patients.filter(p=>p.doctor_id==x.id).length}</td><td>${S.appointments.filter(a=>a.doctor_id==x.id&&a.date==today()).length}</td></tr>`).join('')}</table></div></div>`;
+}
+function addDoc(ev){const f=form(ev);act(()=>run(sb.from('doctors').insert({name:f.name,dept:f.dept})),'Doctor added.')}
+
+function msgs(){
+ return `<div class="head"><div><h2>Messages</h2><p>Every confirmation and announcement is logged in one place.</p></div></div>
+ <div class="panel"><h3>Send an announcement</h3><form onsubmit="announce(event)">
+ <label>Audience<select name="to"><option>All staff</option><option>All students</option>${S.events.map(e=>`<option value="${e.id}">${esc(e.title)} registrants</option>`).join('')}</select></label>
+ <textarea name="text" placeholder="Write your message" required></textarea><div class="full"><button class="btn">Send message</button></div></form></div>
+ <div class="panel"><h3>History</h3>${S.messages.map(m=>`<div class="msg"><small>${esc(new Date(m.sent_at).toLocaleString())} · To ${esc(m.audience)}</small><br>${esc(m.body)}</div>`).join('')||'<p class="empty">No messages yet.</p>'}</div>`;
+}
+function announce(ev){const f=form(ev);let to=f.to;const e=S.events.find(x=>String(x.id)===String(f.to));if(e)to=`${e.title} (${e.confirmed+e.waitlist} people)`;act(()=>run(sb.from('messages').insert({audience:to.slice(0,150),body:f.text})),'Message sent.')}
+
+sb.auth.onAuthStateChange(evt=>{if(evt==='SIGNED_OUT'&&authed){authed=false;render()}});
+(async()=>{
+ try{const {data}=await sb.auth.getSession();if(data.session&&await isStaff()){authed=true;await load()}}catch(e){authed=false}
+ render();
+})();
+</script>
+</body>
+</html>
