@@ -1,359 +1,185 @@
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap');
 
-/* ========================================================
-   1. DESIGN TOKENS & SYSTEM VARIABLES
-   ======================================================== */
-:root {
-  --primary: #0284c7;            /* Medical Cyan/Blue */
-  --primary-hover: #0369a1;      /* Deep interactive blue */
-  --primary-subtle: #f0f9ff;     /* Soft highlight background */
-  --primary-border: #bae6fd;     /* Border focus color */
+/* ==========================================================
+   CareDesk — "Innovation Clinic" layout
+   Blue frame, floating white panels, oversized light/bold
+   display type, pill controls, numbered cards.
+   ========================================================== */
+:root{
+  --blue:#2f6bff; --blue-deep:#1f4fe0; --blue-soft:#eaf0ff; --blue-line:#d6e2ff;
+  --frame:#2f6bff; --canvas:#f3f6ff; --surface:#fff;
+  --ink:#0b1020; --mute:#6b7694; --faint:#a9b4d0;
+  --ok:#0e9f6e; --warn:#d97706; --bad:#dc2626;
+  --r-xl:36px; --r-lg:26px; --r-md:16px; --pill:999px;
+  --shadow:0 20px 50px -24px rgba(31,79,224,.35);
 
-  --bg-app: #f8fafc;             /* Crisp ultra-light slate canvas */
-  --surface: #ffffff;            /* Pure white content containers */
-  --border: #e2e8f0;             /* Clean border line */
-  --border-strong: #cbd5e1;      /* Form input border */
-
-  --text-main: #0f172a;          /* High-contrast dark text */
-  --text-muted: #64748b;         /* Supporting labels & metadata */
-  --text-light: #94a3b8;         /* Placeholders and hints */
-
-  --radius-sm: 6px;
-  --radius-md: 10px;
-  --radius-lg: 14px;
-
-  --shadow-sm: 0 1px 2px 0 rgba(15, 23, 42, 0.05);
-  --shadow-card: 0 1px 3px 0 rgba(15, 23, 42, 0.06), 0 1px 2px -1px rgba(15, 23, 42, 0.04);
+  /* legacy aliases (staff.html / events.html) */
+  --brand:var(--blue); --mute-legacy:var(--mute); --line:var(--blue-line); --soft:var(--blue-soft);
+  --panel:var(--surface); --bg:var(--canvas); --green:var(--ok); --amber:var(--warn); --red:var(--bad);
+  --primary:var(--blue); --primary-hover:var(--blue-deep); --primary-subtle:var(--blue-soft); --primary-border:var(--blue-line);
+  --text-main:var(--ink); --text-muted:var(--mute); --text-light:var(--faint);
 }
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Manrope',system-ui,-apple-system,sans-serif;-webkit-font-smoothing:antialiased}
+html{scroll-padding-top:96px}
+body{background:var(--frame);color:var(--ink);line-height:1.5;min-height:100vh;padding:14px}
+body::before{content:"";position:fixed;inset:14px;background:var(--canvas);border-radius:var(--r-xl);z-index:-1}
+a{color:var(--blue)}
 
-/* ========================================================
-   2. GLOBAL RESET & BASE RULES
-   ======================================================== */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
-  -webkit-font-smoothing: antialiased;
-}
+/* ---------- Header: floating pill ---------- */
+.app-header{position:sticky;top:26px;z-index:50;margin:12px auto 0;max-width:1240px;padding:0 20px}
+.header-container{background:var(--surface);border-radius:var(--pill);padding:10px 12px 10px 22px;display:flex;align-items:center;justify-content:space-between;gap:16px;box-shadow:var(--shadow);border:1px solid var(--blue-line)}
+.logo{display:flex;align-items:center;gap:.6rem;font-size:1.05rem;font-weight:800;letter-spacing:-.03em;white-space:nowrap}
+.logo svg{width:30px;height:30px;padding:6px;border-radius:50%;background:var(--blue);stroke:#fff}
+.nav-tabs{display:flex;gap:4px;background:var(--blue-soft);padding:4px;border-radius:var(--pill);overflow-x:auto}
+.nav-btn{background:transparent;border:0;padding:.55rem 1.1rem;font-size:.8rem;font-weight:600;color:var(--mute);border-radius:var(--pill);cursor:pointer;transition:.2s;white-space:nowrap}
+.nav-btn:hover{color:var(--ink)}
+.nav-btn.active{background:var(--surface);color:var(--blue);box-shadow:0 4px 12px -4px rgba(31,79,224,.35)}
+.admin-login-btn{display:flex;align-items:center;gap:.6rem;text-decoration:none;color:var(--ink);font-size:.8rem;font-weight:700;background:var(--blue-soft);padding:4px 16px 4px 4px;border-radius:var(--pill);white-space:nowrap}
+.profile-circle{width:34px;height:34px;border-radius:50%;background:var(--ink);color:#fff;display:grid;place-items:center}
+.admin-login-btn:hover .profile-circle{background:var(--blue)}
 
-body {
-  background-color: var(--bg-app);
-  color: var(--text-main);
-  line-height: 1.5;
-  min-height: 100vh;
-}
+/* ---------- Banner ---------- */
+.banner-container{max-width:1240px;margin:16px auto 0;padding:0 20px}
+.alert-banner{display:none;padding:.85rem 1.4rem;border-radius:var(--pill);font-size:.85rem;font-weight:600}
+.alert-banner.success{display:block;background:#e7f8f0;color:#0b6b4a}
+.alert-banner.error{display:block;background:#ffecec;color:#a11d1d}
 
-/* ========================================================
-   3. HEADER & SEGMENTED CONTROLS
-   ======================================================== */
-.app-header {
-  background: var(--surface);
-  border-bottom: 1px solid var(--border);
-  position: sticky;
-  top: 0;
-  z-index: 50;
-  box-shadow: var(--shadow-sm);
-}
+/* ---------- Page layout ---------- */
+.main-content{max-width:1240px;margin:1.6rem auto 0;padding:0 20px 3rem}
+.tab-pane{display:none!important;counter-reset:card}
+.tab-pane.active{display:block!important}
+.grid-layout{display:grid;grid-template-columns:minmax(300px,380px) 1fr;gap:20px;align-items:start}
+@media(max-width:900px){.grid-layout{grid-template-columns:1fr}}
 
-.header-container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 1.5rem;
-  height: 64px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
+/* ---------- Cards ---------- */
+.card{position:relative;background:var(--surface);border-radius:var(--r-lg);padding:2rem;box-shadow:var(--shadow);border:1px solid var(--blue-line);overflow:hidden}
+.card h2{counter-increment:card;font-size:clamp(1.9rem,3.2vw,2.7rem);font-weight:600;line-height:1;letter-spacing:-.045em;margin-bottom:1.6rem;padding:0;border:0}
+.card h2::before{content:"0" counter(card);display:block;font-size:clamp(3rem,6vw,4.6rem);font-weight:300;letter-spacing:-.06em;color:var(--blue-line);line-height:.9;margin-bottom:.6rem}
+.card-title{font-size:2rem;font-weight:600;letter-spacing:-.04em}
+.card-subtitle{color:var(--mute);font-size:.9rem;margin-top:.3rem}
+.card-header{margin-bottom:1.4rem}
+.form-group{margin-bottom:.2rem}
 
-.logo {
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-  font-size: 1.15rem;
-  font-weight: 800;
-  letter-spacing: -0.02em;
-  color: var(--text-main);
-}
+/* first card of each tab = the solid blue "feature" card */
+.grid-layout>.card:first-child,.login-container .card{background:radial-gradient(120% 90% at 100% 0%,#5b8dff 0%,var(--blue) 45%,var(--blue-deep) 100%);color:#fff;border:0}
+.grid-layout>.card:first-child h2::before{color:rgba(255,255,255,.28)}
+.grid-layout>.card:first-child label{color:rgba(255,255,255,.75)}
+.grid-layout>.card:first-child .btn-primary{background:#fff;color:var(--blue-deep)}
+.grid-layout>.card:first-child .btn-primary:hover{background:var(--ink);color:#fff}
+.login-container .card h2,.login-container .card-title,.login-container label{color:#fff}
+.login-container .card-subtitle{color:rgba(255,255,255,.75)}
+.login-container .btn-primary{background:#fff;color:var(--blue-deep)}
 
-.logo svg {
-  color: var(--primary);
-}
+/* ---------- Forms ---------- */
+label{display:block;font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--mute);margin:1rem 0 .4rem}
+input,select,textarea{width:100%;background:var(--surface);border:1.5px solid var(--blue-line);color:var(--ink);padding:.8rem 1.1rem;border-radius:var(--pill);font-size:.9rem;font-weight:500;outline:none;transition:.2s}
+textarea{border-radius:var(--r-md);resize:vertical}
+input:focus,select:focus,textarea:focus{border-color:var(--blue);box-shadow:0 0 0 4px rgba(47,107,255,.18)}
+.grid-layout>.card:first-child input,.grid-layout>.card:first-child select,.grid-layout>.card:first-child textarea,.login-container input{border-color:transparent}
+.row{display:flex;gap:.75rem}.row>div{flex:1}
 
-.nav-tabs {
-  display: flex;
-  gap: 0.35rem;
-  background-color: #f1f5f9;
-  padding: 4px;
-  border-radius: var(--radius-md);
-  border: 1px solid var(--border);
-}
+/* ---------- Buttons (pill) ---------- */
+.btn{display:inline-flex;align-items:center;justify-content:center;border:0;border-radius:var(--pill);cursor:pointer;font-weight:700;transition:.2s}
+.btn-primary{width:100%;padding:1rem;background:var(--blue);color:#fff;font-size:.9rem;margin-top:1.6rem;box-shadow:0 10px 24px -10px rgba(31,79,224,.6)}
+.btn-primary:hover{background:var(--blue-deep)}
+.btn-primary:disabled{opacity:.6;cursor:wait}
+.btn-sm,.btn-action,.btn-cancel{padding:.4rem 1rem;font-size:.75rem;font-weight:700;background:var(--blue-soft);border:0;color:var(--blue);border-radius:var(--pill);cursor:pointer;transition:.2s}
+.btn-sm:hover,.btn-action:hover{background:var(--blue);color:#fff}
+.btn-cancel{background:#ffecec;color:var(--bad)}.btn-cancel:hover{background:var(--bad);color:#fff}
 
-.nav-btn {
-  background: transparent;
-  border: none;
-  padding: 0.45rem 0.95rem;
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: var(--text-muted);
-  border-radius: 7px;
-  cursor: pointer;
-  transition: all 0.15s ease-in-out;
-  white-space: nowrap;
-}
+/* ---------- Tables ---------- */
+.data-table{width:100%;border-collapse:separate;border-spacing:0 6px;font-size:.88rem}
+.data-table th{text-align:left;padding:.4rem 1rem;color:var(--mute);font-size:.68rem;text-transform:uppercase;letter-spacing:.09em;font-weight:700}
+.data-table td{padding:1rem;background:var(--canvas);vertical-align:middle}
+.data-table td:first-child{border-radius:var(--r-md) 0 0 var(--r-md)}
+.data-table td:last-child{border-radius:0 var(--r-md) var(--r-md) 0}
+.data-table tr:hover td{background:var(--blue-soft)}
+.data-table strong{font-weight:700;letter-spacing:-.01em}
+.data-table small{color:var(--mute);font-size:.75rem}
+.data-table code{font-family:'JetBrains Mono',monospace;background:var(--surface);color:var(--blue-deep);padding:3px 10px;border-radius:var(--pill);font-size:.75rem}
 
-.nav-btn:hover {
-  color: var(--text-main);
-}
+/* ---------- Badges ---------- */
+.badge{display:inline-flex;align-items:center;padding:.25rem .8rem;border-radius:var(--pill);font-size:.7rem;font-weight:700;text-transform:capitalize}
+.badge.admitted{background:#ffecec;color:var(--bad)}
+.badge.outpatient{background:var(--blue-soft);color:var(--blue)}
+.badge.discharged{background:#eef0f6;color:var(--mute)}
+.badge.scheduled,.badge.paid{background:#e7f8f0;color:var(--ok)}
+.badge.pending{background:#fff4e0;color:var(--warn)}
+.badge.cancelled{background:#eef0f6;color:var(--mute)}
 
-.nav-btn.active {
-  background-color: var(--surface);
-  color: var(--primary);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
-}
+/* ---------- Doctor dashboard heading ---------- */
+.main-content>div>h1{font-size:clamp(2.4rem,5vw,4.2rem)!important;font-weight:600!important;letter-spacing:-.05em;line-height:1}
+.main-content>div>p{font-size:1rem!important;color:var(--mute)!important;margin-top:.5rem}
 
-/* ========================================================
-   4. NOTIFICATION BANNER
-   ======================================================== */
-.alert-banner {
-  max-width: 1200px;
-  margin: 1.25rem auto 0;
-  padding: 0.85rem 1.25rem;
-  border-radius: var(--radius-md);
-  font-size: 0.875rem;
-  font-weight: 600;
-  display: none;
-}
+/* ---------- Login page ---------- */
+.login-container{max-width:460px;margin:4rem auto;padding:0 1rem}
+.back-link{display:inline-block;margin-bottom:1.2rem;font-size:.8rem;color:var(--mute);text-decoration:none;font-weight:700;background:var(--surface);padding:.5rem 1rem;border-radius:var(--pill)}
 
-.alert-banner.success {
-  display: block;
-  background-color: #ecfdf5;
-  color: #065f46;
-  border: 1px solid #a7f3d0;
-}
+/* ==========================================================
+   Legacy pages: staff.html + events.html  (body.legacy)
+   ========================================================== */
+body.legacy{padding:14px}
+body.legacy .app{display:grid;grid-template-columns:240px 1fr;gap:16px;min-height:calc(100vh - 28px)}
+body.legacy nav{background:var(--ink);color:#fff;border-radius:var(--r-lg);padding:24px 14px;position:sticky;top:14px;height:calc(100vh - 28px);align-self:start;margin:12px 0 12px 12px}
+body.legacy nav h1{font-size:1.5rem;font-weight:700;letter-spacing:-.04em;padding:0 12px 22px}
+body.legacy nav small{display:block;font-size:.72rem;font-weight:400;letter-spacing:0;opacity:.6;margin-top:4px}
+body.legacy nav button{display:block;width:100%;text-align:left;background:none;border:0;color:#fff;font-size:.85rem;font-weight:600;padding:.75rem 1rem;border-radius:var(--pill);cursor:pointer;opacity:.7;transition:.2s}
+body.legacy nav button:hover{background:rgba(255,255,255,.1);opacity:1}
+body.legacy nav button.on{background:var(--blue);opacity:1}
+body.legacy main{padding:28px 24px;max-width:1100px;width:100%;margin:0 auto}
+body.legacy .head h2,.head h2{font-size:clamp(2.2rem,4.5vw,3.6rem);font-weight:600;letter-spacing:-.05em;line-height:1}
+.head{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap;margin-bottom:1.6rem}
+.head p{margin:.6rem 0 0;color:var(--mute);font-size:.95rem;max-width:560px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;margin-bottom:20px}
+.stat{background:var(--surface);border:1px solid var(--blue-line);border-radius:var(--r-lg);padding:1.3rem 1.5rem;box-shadow:var(--shadow)}
+.stat b{display:block;font-size:clamp(2.4rem,4vw,3.4rem);font-weight:300;letter-spacing:-.06em;line-height:1;color:var(--blue)}
+.stat span{display:block;color:var(--mute);font-size:.8rem;font-weight:600;margin-top:.5rem}
+.panel{background:var(--surface);border:1px solid var(--blue-line);border-radius:var(--r-lg);padding:1.8rem;margin-bottom:20px;box-shadow:var(--shadow)}
+.panel h3{font-size:1.6rem;font-weight:600;letter-spacing:-.04em;margin-bottom:1.1rem}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.ev{display:grid;grid-template-columns:70px 1fr auto;gap:16px;align-items:center;padding:1rem 0;border-top:1px solid var(--blue-line)}
+.ev:first-of-type{border-top:0}
+.date{background:var(--blue);color:#fff;border-radius:var(--r-md);text-align:center;padding:.6rem 0;line-height:1.1}
+.date b{display:block;font-size:1.6rem;font-weight:700;letter-spacing:-.04em}.date span{font-size:.7rem;opacity:.8;text-transform:uppercase;letter-spacing:.08em}
+.ev h4{font-size:1.05rem;font-weight:700;letter-spacing:-.02em}.ev p{margin:2px 0 6px;color:var(--mute);font-size:.82rem}
+.bar{height:8px;background:var(--blue-soft);border-radius:var(--pill);overflow:hidden;max-width:280px}
+.bar i{display:block;height:100%;background:var(--blue);border-radius:var(--pill)}.bar i.full{background:var(--warn)}
+.tag{display:inline-block;font-size:.7rem;font-weight:700;padding:.25rem .8rem;border-radius:var(--pill);background:var(--blue-soft);color:var(--blue)}
+.tag.ok{background:#e7f8f0;color:var(--ok)}.tag.warn{background:#fff4e0;color:var(--warn)}.tag.bad{background:#ffecec;color:var(--bad)}
+button.btn{background:var(--blue);color:#fff;border:0;border-radius:var(--pill);padding:.7rem 1.4rem;font-size:.85rem;font-weight:700;cursor:pointer;transition:.2s}
+button.btn:hover{background:var(--blue-deep)}
+button.btn.ghost{background:var(--blue-soft);color:var(--blue)}button.btn.ghost:hover{background:var(--blue);color:#fff}
+button.btn.sm{padding:.4rem 1rem;font-size:.75rem}
+body.legacy form{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;align-items:end}
+body.legacy label{display:grid;gap:6px;margin:0}
+body.legacy textarea{grid-column:1/-1}
+form .full{grid-column:1/-1}
+.wrap{overflow-x:auto}
+body.legacy table{width:100%;border-collapse:separate;border-spacing:0 6px;font-size:.88rem}
+body.legacy th{text-align:left;padding:.4rem 1rem;color:var(--mute);font-size:.68rem;text-transform:uppercase;letter-spacing:.09em;font-weight:700;white-space:nowrap}
+body.legacy td{padding:.9rem 1rem;background:var(--canvas);white-space:nowrap}
+body.legacy td:first-child{border-radius:var(--r-md) 0 0 var(--r-md)}body.legacy td:last-child{border-radius:0 var(--r-md) var(--r-md) 0}
+.msg{padding:.9rem 0;border-top:1px solid var(--blue-line);font-size:.88rem}.msg:first-of-type{border-top:0}.msg small{color:var(--mute)}
+.empty{color:var(--mute);padding:.8rem 0}
+.mt{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:.8rem 1.4rem;border-radius:var(--pill);font-size:.85rem;font-weight:600;max-width:90%;z-index:99}
+dialog{border:0;border-radius:var(--r-lg);background:var(--surface);color:var(--ink);width:min(540px,92vw);padding:1.8rem;box-shadow:0 30px 80px -20px rgba(11,16,32,.5)}
+dialog::backdrop{background:rgba(11,16,32,.5);backdrop-filter:blur(4px)}
+dialog h3{font-size:1.6rem;font-weight:600;letter-spacing:-.04em}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,a:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
 
-.alert-banner.error {
-  display: block;
-  background-color: #fff1f2;
-  color: #9f1239;
-  border: 1px solid #fecdd3;
+/* ---------- Responsive ---------- */
+@media(max-width:820px){
+  body{padding:8px}body::before{inset:8px;border-radius:26px}
+  .app-header{padding:0 8px;top:16px}
+  .header-container{flex-wrap:wrap;border-radius:26px;padding:12px}
+  .nav-tabs{order:3;width:100%}
+  .admin-login-btn span{display:none}.admin-login-btn{padding:4px}
+  .main-content{padding:0 12px 2rem}.card,.panel{padding:1.4rem}
+  .row{flex-direction:column;gap:0}
+  body.legacy .app{grid-template-columns:1fr}
+  body.legacy nav{position:static;height:auto;display:flex;overflow-x:auto;gap:4px;padding:10px;margin:8px}
+  body.legacy nav h1{display:none}body.legacy nav button{width:auto;white-space:nowrap}
+  .grid2{grid-template-columns:1fr}.ev{grid-template-columns:58px 1fr}.ev>div:last-child{grid-column:1/-1}
 }
-
-/* ========================================================
-   5. LAYOUT & TAB SYSTEM
-   ======================================================== */
-.main-content {
-  max-width: 1200px;
-  margin: 1.75rem auto;
-  padding: 0 1.5rem 3.5rem;
-}
-
-.tab-pane {
-  display: none !important;
-}
-
-.tab-pane.active {
-  display: block !important;
-}
-
-/* 2-Column Responsive Dashboard Layout */
-.grid-layout {
-  display: grid;
-  grid-template-columns: 360px 1fr;
-  gap: 1.75rem;
-  align-items: start;
-}
-
-@media (max-width: 900px) {
-  .grid-layout {
-    grid-template-columns: 1fr;
-  }
-}
-
-/* ========================================================
-   6. CARDS & CRISP INPUT FORMS
-   ======================================================== */
-.card {
-  background-color: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  padding: 1.6rem;
-  box-shadow: var(--shadow-card);
-}
-
-.card h2 {
-  font-size: 1.1rem;
-  font-weight: 700;
-  letter-spacing: -0.01em;
-  margin-bottom: 1.25rem;
-  color: var(--text-main);
-  border-bottom: 1px solid var(--border);
-  padding-bottom: 0.75rem;
-}
-
-label {
-  display: block;
-  font-size: 0.72rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--text-muted);
-  margin-top: 1rem;
-  margin-bottom: 0.35rem;
-}
-
-input, select, textarea {
-  width: 100%;
-  background-color: #ffffff;
-  border: 1px solid var(--border-strong);
-  color: var(--text-main);
-  padding: 0.65rem 0.85rem;
-  border-radius: var(--radius-sm);
-  font-size: 0.875rem;
-  outline: none;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
-}
-
-input:focus, select:focus, textarea:focus {
-  border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15);
-}
-
-.row {
-  display: flex;
-  gap: 0.75rem;
-}
-
-.row > div {
-  flex: 1;
-}
-
-/* Interactive Buttons */
-.btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border: none;
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-  font-weight: 600;
-  transition: all 0.15s ease;
-}
-
-.btn-primary {
-  width: 100%;
-  padding: 0.75rem;
-  background-color: var(--primary);
-  color: #ffffff;
-  font-size: 0.875rem;
-  margin-top: 1.4rem;
-  box-shadow: 0 1px 2px rgba(2, 132, 199, 0.2);
-}
-
-.btn-primary:hover {
-  background-color: var(--primary-hover);
-}
-
-.btn-sm {
-  padding: 0.25rem 0.65rem;
-  font-size: 0.75rem;
-  background-color: var(--primary-subtle);
-  border: 1px solid var(--primary-border);
-  color: var(--primary);
-  border-radius: var(--radius-sm);
-}
-
-.btn-sm:hover {
-  background-color: var(--primary);
-  color: #ffffff;
-}
-
-/* ========================================================
-   7. STRUCTURED DATA TABLES
-   ======================================================== */
-.data-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 0.875rem;
-}
-
-.data-table th {
-  text-align: left;
-  padding: 0.75rem 0.85rem;
-  color: var(--text-muted);
-  border-bottom: 1px solid var(--border);
-  font-size: 0.72rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  font-weight: 700;
-  background-color: #fafbfc;
-}
-
-.data-table td {
-  padding: 0.95rem 0.85rem;
-  border-bottom: 1px solid #f1f5f9;
-  vertical-align: middle;
-}
-
-.data-table tr:hover {
-  background-color: #f8fafc;
-}
-
-.data-table small {
-  color: var(--text-muted);
-  font-size: 0.75rem;
-}
-
-.data-table code {
-  font-family: 'JetBrains Mono', monospace;
-  background-color: var(--primary-subtle);
-  color: var(--primary-hover);
-  padding: 2px 6px;
-  border-radius: 4px;
-  font-size: 0.78rem;
-  border: 1px solid var(--primary-border);
-}
-
-/* ========================================================
-   8. CLINICAL STATUS BADGES
-   ======================================================== */
-.badge {
-  display: inline-flex;
-  align-items: center;
-  padding: 2px 8px;
-  border-radius: 9999px;
-  font-size: 0.7rem;
-  font-weight: 700;
-  text-transform: capitalize;
-}
-
-.badge.admitted {
-  background-color: #fee2e2;
-  color: #b91c1c;
-  border: 1px solid #fecaca;
-}
-
-.badge.outpatient {
-  background-color: #f1f5f9;
-  color: #475569;
-  border: 1px solid #e2e8f0;
-}
-
-.badge.discharged {
-  background-color: #f8fafc;
-  color: #94a3b8;
-  border: 1px solid #e2e8f0;
-}
-
-.badge.scheduled, 
-.badge.paid {
-  background-color: #ecfdf5;
-  color: #047857;
-  border: 1px solid #a7f3d0;
-}
-
-.badge.pending {
-  background-color: #fffbeb;
-  color: #b45309;
-  border: 1px solid #fde68a;
-}
+.login-container .card h2::before{display:none}
