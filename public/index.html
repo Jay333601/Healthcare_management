@@ -3,21 +3,24 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>CareDesk - Hospital Management System</title>
+  <title>CareDesk — Clinical Hospital System</title>
   <link rel="stylesheet" href="./style.css" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="./config.js"></script>
 </head>
 <body>
-  <!-- Navigation Header -->
+
+  <!-- Top Navigation Bar -->
   <header class="app-header">
     <div class="header-container">
       <div class="logo">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0284c7" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
           <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>
         </svg>
         <span>CareDesk Hospital</span>
       </div>
+
+      <!-- Center Tabs -->
       <nav class="nav-tabs">
         <button class="nav-btn active" onclick="switchTab('patients', event)">Patients</button>
         <button class="nav-btn" onclick="switchTab('appointments', event)">Appointments</button>
@@ -25,17 +28,30 @@
         <button class="nav-btn" onclick="switchTab('billing', event)">Billing</button>
         <button class="nav-btn" onclick="switchTab('doctors', event)">Doctors</button>
       </nav>
+
+      <!-- Right-side Admin Login with Profile Circle -->
+      <a href="./doctor-login.html" class="admin-login-btn">
+        <div class="profile-circle">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/>
+            <circle cx="12" cy="7" r="4"/>
+          </svg>
+        </div>
+        <span>Admin Login</span>
+      </a>
     </div>
   </header>
 
   <!-- Notification Banner -->
-  <div id="alert-banner" class="alert-banner" style="display: none;"></div>
+  <div class="banner-container">
+    <div id="alert-banner" class="alert-banner"></div>
+  </div>
 
   <main class="main-content">
-    <!-- 1. PATIENTS TAB -->
+    <!-- TAB 1: PATIENTS -->
     <section id="tab-patients" class="tab-pane active">
       <div class="grid-layout">
-        <div class="card form-card">
+        <div class="card">
           <h2>Register Patient</h2>
           <form id="patient-form" onsubmit="handleCreatePatient(event)">
             <label>Full Name</label>
@@ -79,30 +95,32 @@
           </form>
         </div>
 
-        <div class="card list-card">
+        <div class="card">
           <h2>Patient Directory</h2>
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th>Patient</th>
-                <th>Age / Gender</th>
-                <th>Doctor</th>
-                <th>Status</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody id="patients-table-body">
-              <tr><td colspan="5">Loading patients...</td></tr>
-            </tbody>
-          </table>
+          <div style="overflow-x: auto;">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Patient</th>
+                  <th>Age / Gender</th>
+                  <th>Doctor</th>
+                  <th>Status</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="patients-table-body">
+                <tr><td colspan="5">Loading patients...</td></tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </section>
 
-    <!-- 2. APPOINTMENTS TAB -->
+    <!-- TAB 2: APPOINTMENTS (With Cancel Action) -->
     <section id="tab-appointments" class="tab-pane">
       <div class="grid-layout">
-        <div class="card form-card">
+        <div class="card">
           <h2>Book Appointment</h2>
           <form id="appointment-form" onsubmit="handleCreateAppointment(event)">
             <label>Patient</label>
@@ -120,46 +138,54 @@
               <option value="5">Dr. Arjun Nair (Orthopaedics)</option>
             </select>
 
-            <label>Date</label>
-            <input type="date" id="apt-date" required />
-
-            <label>Time Slot</label>
-            <select id="apt-time" required>
-              <option value="09:00:00">09:00 AM</option>
-              <option value="10:00:00">10:00 AM</option>
-              <option value="11:00:00">11:00 AM</option>
-              <option value="14:00:00">02:00 PM</option>
-              <option value="15:00:00">03:00 PM</option>
-              <option value="16:00:00">04:00 PM</option>
-            </select>
+            <div class="row">
+              <div>
+                <label>Date</label>
+                <input type="date" id="apt-date" required />
+              </div>
+              <div>
+                <label>Time Slot</label>
+                <select id="apt-time" required>
+                  <option value="09:00:00">09:00 AM</option>
+                  <option value="10:00:00">10:00 AM</option>
+                  <option value="11:00:00">11:00 AM</option>
+                  <option value="14:00:00">02:00 PM</option>
+                  <option value="15:00:00">03:00 PM</option>
+                  <option value="16:00:00">04:00 PM</option>
+                </select>
+              </div>
+            </div>
 
             <button type="submit" class="btn btn-primary">Confirm Appointment</button>
           </form>
         </div>
 
-        <div class="card list-card">
+        <div class="card">
           <h2>Scheduled Appointments</h2>
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th>Patient</th>
-                <th>Doctor</th>
-                <th>Date & Time</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody id="appointments-table-body">
-              <tr><td colspan="4">Loading appointments...</td></tr>
-            </tbody>
-          </table>
+          <div style="overflow-x: auto;">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Patient</th>
+                  <th>Doctor</th>
+                  <th>Date & Time</th>
+                  <th>Status</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="appointments-table-body">
+                <tr><td colspan="5">Loading appointments...</td></tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </section>
 
-    <!-- 3. MEDICAL RECORDS TAB -->
+    <!-- TAB 3: MEDICAL RECORDS -->
     <section id="tab-records" class="tab-pane">
       <div class="grid-layout">
-        <div class="card form-card">
+        <div class="card">
           <h2>Add Medical Record</h2>
           <form id="records-form" onsubmit="handleCreateRecord(event)">
             <label>Patient</label>
@@ -190,30 +216,32 @@
           </form>
         </div>
 
-        <div class="card list-card">
+        <div class="card">
           <h2>Medical History & Records</h2>
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th>Patient</th>
-                <th>Doctor</th>
-                <th>Diagnosis</th>
-                <th>Prescription</th>
-                <th>Date</th>
-              </tr>
-            </thead>
-            <tbody id="records-table-body">
-              <tr><td colspan="5">Loading records...</td></tr>
-            </tbody>
-          </table>
+          <div style="overflow-x: auto;">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Patient</th>
+                  <th>Doctor</th>
+                  <th>Diagnosis</th>
+                  <th>Prescription</th>
+                  <th>Date</th>
+                </tr>
+              </thead>
+              <tbody id="records-table-body">
+                <tr><td colspan="5">Loading records...</td></tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </section>
 
-    <!-- 4. BILLING TAB -->
+    <!-- TAB 4: BILLING -->
     <section id="tab-billing" class="tab-pane">
       <div class="grid-layout">
-        <div class="card form-card">
+        <div class="card">
           <h2>Generate Invoice</h2>
           <form id="billing-form" onsubmit="handleCreateInvoice(event)">
             <label>Patient</label>
@@ -224,7 +252,7 @@
             <label>Description</label>
             <input type="text" id="bill-desc" required placeholder="e.g. Consultation & Blood Test" />
 
-            <label>Amount (₹ / $)</label>
+            <label>Amount (₹)</label>
             <input type="number" step="0.01" id="bill-amount" required placeholder="1500.00" />
 
             <label>Status</label>
@@ -237,56 +265,58 @@
           </form>
         </div>
 
-        <div class="card list-card">
+        <div class="card">
           <h2>Billing & Invoices</h2>
+          <div style="overflow-x: auto;">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Invoice #</th>
+                  <th>Patient</th>
+                  <th>Description</th>
+                  <th>Amount</th>
+                  <th>Status</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="billing-table-body">
+                <tr><td colspan="6">Loading invoices...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 5: DOCTORS -->
+    <section id="tab-doctors" class="tab-pane">
+      <div class="card" style="max-width: 900px; margin: 0 auto;">
+        <h2>Doctor Directory</h2>
+        <div style="overflow-x: auto;">
           <table class="data-table">
             <thead>
               <tr>
-                <th>Invoice #</th>
-                <th>Patient</th>
-                <th>Description</th>
-                <th>Amount</th>
-                <th>Status</th>
-                <th>Action</th>
+                <th>Name</th>
+                <th>Department</th>
+                <th>Email</th>
+                <th>Phone</th>
               </tr>
             </thead>
-            <tbody id="billing-table-body">
-              <tr><td colspan="6">Loading invoices...</td></tr>
+            <tbody id="doctors-table-body">
+              <tr><td colspan="4">Loading doctors...</td></tr>
             </tbody>
           </table>
         </div>
       </div>
     </section>
-
-    <!-- 5. DOCTORS TAB -->
-    <section id="tab-doctors" class="tab-pane">
-      <div class="card list-card" style="max-width: 900px; margin: 0 auto;">
-        <h2>Doctor Directory</h2>
-        <table class="data-table">
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Department</th>
-              <th>Email</th>
-              <th>Phone</th>
-            </tr>
-          </thead>
-          <tbody id="doctors-table-body">
-            <tr><td colspan="4">Loading doctors...</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </section>
   </main>
 
-  <!-- Application Logic -->
   <script>
     const supabaseClient = window.supabase.createClient(
       window.CAREDESK_CONFIG.SUPABASE_URL,
       window.CAREDESK_CONFIG.SUPABASE_ANON_KEY
     );
 
-    // Default hardcoded doctors so dropdowns and directory always show items
     const DEFAULT_DOCTORS = [
       { id: 1, name: 'Dr. Sarah Chen', department: 'Cardiology', email: 'schen@hospital.org', phone: '555-0101' },
       { id: 2, name: 'Dr. Marcus Vance', department: 'Pediatrics', email: 'mvance@hospital.org', phone: '555-0102' },
@@ -308,16 +338,18 @@
       banner.style.display = 'block';
       banner.className = `alert-banner ${type}`;
       banner.innerText = message;
-      setTimeout(() => { banner.style.display = 'none'; }, 5000);
+      setTimeout(() => { banner.style.display = 'none'; }, 4000);
     }
 
-    function switchTab(tabName, event) {
+    function switchTab(tabName, evt) {
       document.querySelectorAll('.tab-pane').forEach(el => el.classList.remove('active'));
       document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
 
-      document.getElementById(`tab-${tabName}`).classList.add('active');
-      if (event && event.target) {
-        event.target.classList.add('active');
+      const targetPane = document.getElementById(`tab-${tabName}`);
+      if (targetPane) targetPane.classList.add('active');
+
+      if (evt && evt.target) {
+        evt.target.classList.add('active');
       }
     }
 
@@ -332,7 +364,6 @@
         ]);
 
         state.patients = pRes.data || [];
-        // Use database doctors if available, otherwise keep default hardcoded ones
         if (dRes.data && dRes.data.length > 0) {
           state.doctors = dRes.data;
         } else {
@@ -350,16 +381,14 @@
         renderBilling();
         renderDoctors();
       } catch (err) {
-        notify('error', 'Database sync notice: ' + err.message);
+        notify('error', 'Notice: ' + err.message);
         renderDropdowns();
         renderDoctors();
       }
     }
 
     function renderDropdowns() {
-      // Doctor dropdowns
-      const docSelects = ['pt-doctor', 'apt-doctor', 'rec-doctor'];
-      docSelects.forEach(id => {
+      ['pt-doctor', 'apt-doctor', 'rec-doctor'].forEach(id => {
         const sel = document.getElementById(id);
         if (!sel) return;
         const cur = sel.value;
@@ -368,9 +397,7 @@
         if (cur) sel.value = cur;
       });
 
-      // Patient dropdowns
-      const ptSelects = ['apt-patient', 'rec-patient', 'bill-patient'];
-      ptSelects.forEach(id => {
+      ['apt-patient', 'rec-patient', 'bill-patient'].forEach(id => {
         const sel = document.getElementById(id);
         if (!sel) return;
         const cur = sel.value;
@@ -391,11 +418,11 @@
         return `
           <tr>
             <td><strong>${p.name}</strong><br><small>${p.contact}</small></td>
-            <td>${p.age} y/o, ${p.gender}</td>
+            <td>${p.age} y/o (${p.gender})</td>
             <td>${docName}</td>
             <td><span class="badge ${p.status}">${p.status}</span></td>
             <td>
-              ${p.status === 'admitted' ? `<button class="btn btn-sm" onclick="dischargePatient(${p.id})">Discharge</button>` : '-'}
+              ${p.status === 'admitted' ? `<button class="btn-action" onclick="dischargePatient(${p.id})">Discharge</button>` : '-'}
             </td>
           </tr>
         `;
@@ -405,18 +432,23 @@
     function renderAppointments() {
       const tbody = document.getElementById('appointments-table-body');
       if (state.appointments.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="4">No appointments scheduled.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="5">No appointments scheduled.</td></tr>';
         return;
       }
       tbody.innerHTML = state.appointments.map(a => {
         const ptName = a.patients ? a.patients.name : (state.patients.find(p => p.id === a.patient_id)?.name || 'Unknown');
         const docName = a.doctors ? a.doctors.name : (state.doctors.find(d => d.id === a.doctor_id)?.name || 'Unknown');
+        const isCancelled = a.status === 'cancelled';
+
         return `
           <tr>
             <td><strong>${ptName}</strong></td>
             <td>${docName}</td>
             <td>${a.appointment_date} at ${(a.appointment_time || '').slice(0, 5)}</td>
             <td><span class="badge ${a.status}">${a.status}</span></td>
+            <td>
+              ${!isCancelled ? `<button class="btn-cancel" onclick="cancelAppointment(${a.id})">Cancel</button>` : '<span style="color: var(--text-muted); font-size: 0.8rem;">Cancelled</span>'}
+            </td>
           </tr>
         `;
       }).join('');
@@ -459,7 +491,7 @@
             <td>₹${parseFloat(b.amount).toFixed(2)}</td>
             <td><span class="badge ${b.status}">${b.status}</span></td>
             <td>
-              ${b.status === 'pending' ? `<button class="btn btn-sm" onclick="markPaid(${b.id})">Mark Paid</button>` : '✓ Settled'}
+              ${b.status === 'pending' ? `<button class="btn-action" onclick="markPaid(${b.id})">Mark Paid</button>` : '✓ Settled'}
             </td>
           </tr>
         `;
@@ -507,10 +539,24 @@
       }]);
 
       if (error) {
-        return notify('error', error.code === '23505' ? 'Doctor already has an appointment booked for this slot.' : error.message);
+        return notify('error', error.code === '23505' ? 'Doctor already booked for this slot.' : error.message);
       }
       notify('success', 'Appointment booked successfully!');
       document.getElementById('appointment-form').reset();
+      loadAllData();
+    }
+
+    // Patient Appointment Cancellation
+    async function cancelAppointment(id) {
+      if (!confirm('Are you sure you want to cancel this appointment?')) return;
+      
+      const { error } = await supabaseClient
+        .from('appointments')
+        .update({ status: 'cancelled' })
+        .eq('id', id);
+
+      if (error) return notify('error', error.message);
+      notify('success', 'Appointment has been cancelled.');
       loadAllData();
     }
 

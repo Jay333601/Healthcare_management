@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CareDesk — Doctor Portal Login</title>
+  <link rel="stylesheet" href="./style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="./config.js"></script>
+  <style>
+    .login-container {
+      max-width: 420px;
+      margin: 5rem auto;
+      padding: 0 1rem;
+    }
+    .back-link {
+      display: inline-block;
+      margin-bottom: 1.5rem;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .back-link:hover {
+      color: var(--primary);
+    }
+    .quick-list {
+      margin-top: 1.5rem;
+      padding: 1rem;
+      background: #f1f5f9;
+      border-radius: var(--radius-sm);
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+    .quick-list code {
+      color: var(--primary);
+      font-weight: 600;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="login-container">
+    <a href="./index.html" class="back-link">← Return to Hospital Portal</a>
+
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">Doctor Portal Login</h2>
+        <p class="card-subtitle">Access your assigned patients & records</p>
+      </div>
+
+      <div id="login-alert" class="alert-banner" style="margin-bottom: 1rem;"></div>
+
+      <form onsubmit="handleDoctorLogin(event)">
+        <div class="form-group">
+          <label>Doctor's Email</label>
+          <input type="email" id="doc-email" required placeholder="e.g. schen@hospital.org" />
+        </div>
+
+        <button type="submit" class="btn btn-primary" id="login-btn">Log In to Dashboard</button>
+      </form>
+
+      <div class="quick-list">
+        <strong>Demo Doctor Emails:</strong><br />
+        • <code onclick="fillEmail('schen@hospital.org')">schen@hospital.org</code> (Dr. Sarah Chen)<br />
+        • <code onclick="fillEmail('kshah@hospital.org')">kshah@hospital.org</code> (Dr. Kabir Shah)<br />
+        • <code onclick="fillEmail('mvance@hospital.org')">mvance@hospital.org</code> (Dr. Marcus Vance)
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const supabaseClient = window.supabase.createClient(
+      window.CAREDESK_CONFIG.SUPABASE_URL,
+      window.CAREDESK_CONFIG.SUPABASE_ANON_KEY
+    );
+
+    function fillEmail(email) {
+      document.getElementById('doc-email').value = email;
+    }
+
+    async function handleDoctorLogin(e) {
+      e.preventDefault();
+      const email = document.getElementById('doc-email').value.trim().toLowerCase();
+      const banner = document.getElementById('login-alert');
+      const btn = document.getElementById('login-btn');
+
+      btn.disabled = true;
+      btn.innerText = 'Verifying...';
+
+      try {
+        const { data, error } = await supabaseClient
+          .from('doctors')
+          .select('*')
+          .ilike('email', email)
+          .single();
+
+        if (error || !data) {
+          banner.style.display = 'block';
+          banner.className = 'alert-banner error';
+          banner.innerText = 'Doctor email not found. Please check and try again.';
+          btn.disabled = false;
+          btn.innerText = 'Log In to Dashboard';
+          return;
+        }
+
+        // Save authenticated doctor details into browser session
+        sessionStorage.setItem('currentDoctor', JSON.stringify(data));
+        window.location.href = './doctor-dashboard.html';
+
+      } catch (err) {
+        banner.style.display = 'block';
+        banner.className = 'alert-banner error';
+        banner.innerText = 'Error connecting to database: ' + err.message;
+        btn.disabled = false;
+        btn.innerText = 'Log In to Dashboard';
+      }
+    }
+  </script>
+</body>
+</html>

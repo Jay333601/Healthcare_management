@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CareDesk — Doctor Dashboard</title>
+  <link rel="stylesheet" href="./style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="./config.js"></script>
+</head>
+<body>
+
+  <header class="app-header">
+    <div class="header-container">
+      <div class="logo">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0284c7" stroke-width="2.5">
+          <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>
+        </svg>
+        <span id="doc-title">Doctor Portal</span>
+      </div>
+
+      <div style="display: flex; align-items: center; gap: 1rem;">
+        <span id="doc-badge" class="badge scheduled">Logged In</span>
+        <button onclick="logoutDoctor()" class="btn btn-sm">Sign Out</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div style="margin-bottom: 2rem;">
+      <h1 id="welcome-msg" style="font-size: 1.5rem; font-weight: 800;">My Patients</h1>
+      <p style="color: var(--text-muted); font-size: 0.85rem;" id="dept-msg">Department Records</p>
+    </div>
+
+    <div class="grid-layout">
+      <!-- Left side: Add medical note for my patient -->
+      <div class="card">
+        <h2>Add Patient Clinical Note</h2>
+        <form id="record-form" onsubmit="handleDoctorNote(event)">
+          <div class="form-group">
+            <label>Select Assigned Patient</label>
+            <select id="rec-patient" required>
+              <option value="">Choose patient...</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Diagnosis</label>
+            <input type="text" id="rec-diagnosis" required placeholder="e.g. Hypertension checkup" />
+          </div>
+
+          <div class="form-group">
+            <label>Prescription / Rx</label>
+            <textarea id="rec-prescription" required rows="2" placeholder="e.g. Paracetamol 500mg BD"></textarea>
+          </div>
+
+          <div class="form-group">
+            <label>Observations</label>
+            <textarea id="rec-notes" rows="2" placeholder="Dietary restrictions or tests"></textarea>
+          </div>
+
+          <button type="submit" class="btn btn-primary">Save Note</button>
+        </form>
+      </div>
+
+      <!-- Right side: Patient Table & Upcoming Appointments -->
+      <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+        <div class="card">
+          <h2>My Assigned Patients</h2>
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Patient</th>
+                <th>Age / Gender</th>
+                <th>Phone</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="my-patients-tbody">
+              <tr><td colspan="4">Loading patients...</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="card">
+          <h2>My Scheduled Appointments</h2>
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Patient</th>
+                <th>Date</th>
+                <th>Time Slot</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="my-appointments-tbody">
+              <tr><td colspan="4">Loading appointments...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const supabaseClient = window.supabase.createClient(
+      window.CAREDESK_CONFIG.SUPABASE_URL,
+      window.CAREDESK_CONFIG.SUPABASE_ANON_KEY
+    );
+
+    // Retrieve active session
+    const docDataRaw = sessionStorage.getItem('currentDoctor');
+    if (!docDataRaw) {
+      window.location.href = './doctor-login.html';
+    }
+    const currentDoctor = JSON.parse(docDataRaw);
+
+    document.getElementById('welcome-msg').innerText = `Welcome, ${currentDoctor.name}`;
+    document.getElementById('dept-msg').innerText = `Department: ${currentDoctor.department} • Direct access`;
+
+    function logoutDoctor() {
+      sessionStorage.removeItem('currentDoctor');
+      window.location.href = './doctor-login.html';
+    }
+
+    async function loadDoctorData() {
+      try {
+        // Fetch only this doctor's patients and appointments
+        const [patientsRes, appointmentsRes] = await Promise.all([
+          supabaseClient.from('patients').select('*').eq('assigned_doctor_id', currentDoctor.id),
+          supabaseClient.from('appointments').select('*, patients(name)').eq('doctor_id', currentDoctor.id)
+        ]);
+
+        const patients = patientsRes.data || [];
+        const appointments = appointmentsRes.data || [];
+
+        // Populate patient dropdown
+        const ptSelect = document.getElementById('rec-patient');
+        ptSelect.innerHTML = '<option value="">Choose patient...</option>' + 
+          patients.map(p => `<option value="${p.id}">${p.name} (#${p.id})</option>`).join('');
+
+        // Populate Patients Table
+        const ptTbody = document.getElementById('my-patients-tbody');
+        if (patients.length === 0) {
+          ptTbody.innerHTML = '<tr><td colspan="4" style="color: var(--text-muted); padding: 1.5rem; text-align: center;">No patients assigned yet.</td></tr>';
+        } else {
+          ptTbody.innerHTML = patients.map(p => `
+            <tr>
+              <td><strong>${p.name}</strong></td>
+              <td>${p.age} y/o (${p.gender})</td>
+              <td>${p.contact}</td>
+              <td><span class="badge ${p.status}">${p.status}</span></td>
+            </tr>
+          `).join('');
+        }
+
+        // Populate Appointments Table
+        const aptTbody = document.getElementById('my-appointments-tbody');
+        if (appointments.length === 0) {
+          aptTbody.innerHTML = '<tr><td colspan="4" style="color: var(--text-muted); padding: 1.5rem; text-align: center;">No appointments scheduled.</td></tr>';
+        } else {
+          aptTbody.innerHTML = appointments.map(a => `
+            <tr>
+              <td><strong>${a.patients?.name || 'Patient'}</strong></td>
+              <td>${a.appointment_date}</td>
+              <td>${(a.appointment_time || '').slice(0, 5)}</td>
+              <td><span class="badge ${a.status}">${a.status}</span></td>
+            </tr>
+          `).join('');
+        }
+
+      } catch (err) {
+        alert('Error loading data: ' + err.message);
+      }
+    }
+
+    async function handleDoctorNote(e) {
+      e.preventDefault();
+      const patientId = document.getElementById('rec-patient').value;
+      const diagnosis = document.getElementById('rec-diagnosis').value;
+      const prescription = document.getElementById('rec-prescription').value;
+      const notes = document.getElementById('rec-notes').value;
+
+      const { error } = await supabaseClient.from('medical_records').insert([{
+        patient_id: parseInt(patientId),
+        doctor_id: currentDoctor.id,
+        diagnosis,
+        prescription,
+        notes
+      }]);
+
+      if (error) {
+        alert('Failed to save record: ' + error.message);
+        return;
+      }
+
+      alert('Medical record successfully saved to patient file!');
+      document.getElementById('record-form').reset();
+    }
+
+    window.addEventListener('DOMContentLoaded', loadDoctorData);
+  </script>
+</body>
+</html>
