@@ -1,165 +1,567 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<title>CareDesk Hospital – Book a doctor, join a health event</title>
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700&family=Public+Sans:wght@400;500;600&display=swap" rel="stylesheet">
-<style>
-:root{--bg:#f3f7f7;--panel:#fff;--ink:#12303a;--mute:#5d7580;--line:#d5e0e3;--brand:#0f4c5c;--brand-ink:#fff;--amber:#d98e2b;--green:#2f7d5b;--soft:#e2edf0;--red:#b83f36;
-box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e1b20;--panel:#15272e;--ink:#e5eff2;--mute:#8fa8b1;--line:#27404a;--brand:#5fb3c6;--brand-ink:#082229;--amber:#e8b25c;--green:#6cc79f;--soft:#1d343c;--red:#e5776e}}
-:root[data-theme="dark"]{--bg:#0e1b20;--panel:#15272e;--ink:#e5eff2;--mute:#8fa8b1;--line:#27404a;--brand:#5fb3c6;--brand-ink:#082229;--amber:#e8b25c;--green:#6cc79f;--soft:#1d343c;--red:#e5776e}
-*{box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:70px}
-body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 "Public Sans",system-ui,sans-serif}
-h1,h2,h3,h4{font-family:"Bricolage Grotesque",system-ui,sans-serif;margin:0;line-height:1.1}
-a{color:var(--brand)}
-.wrap{max-width:1080px;margin:0 auto;padding:0 20px}
-header{position:sticky;top:0;z-index:5;background:var(--panel);border-bottom:1px solid var(--line)}
-header .wrap{display:flex;align-items:center;justify-content:space-between;height:60px;gap:12px}
-.logo{font:700 20px "Bricolage Grotesque";color:var(--brand);text-decoration:none}
-header nav{display:flex;gap:18px;overflow-x:auto}header nav a{color:var(--ink);text-decoration:none;font-weight:500;font-size:15px;white-space:nowrap}
-header nav a:hover{color:var(--brand)}
-.hero{padding:44px 0 36px}.hero .wrap{display:grid;grid-template-columns:1.05fr 1fr;gap:36px;align-items:start}
-.hero h1{font-size:clamp(34px,5vw,54px);letter-spacing:-.02em}.hero p{color:var(--mute);font-size:18px;max-width:46ch;margin:16px 0 22px}
-.btn{background:var(--brand);color:var(--brand-ink);border:0;border-radius:8px;padding:11px 18px;font:600 15px "Public Sans";cursor:pointer;text-decoration:none;display:inline-block}
-.btn.ghost{background:none;color:var(--brand);border:1px solid var(--line)}.btn.sm{padding:7px 12px;font-size:14px}
-.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:20px}
-.card h3{font-size:22px;margin-bottom:14px}
-form{display:grid;grid-template-columns:1fr 1fr;gap:12px}.full{grid-column:1/-1}
-label{font-size:13px;color:var(--mute);display:grid;gap:4px}
-input,select{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:9px 10px;width:100%}
-button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
-.slots{display:flex;flex-wrap:wrap;gap:6px}
-.slots button{font:500 14px "Public Sans";border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:6px;padding:6px 10px;cursor:pointer}
-.slots button[aria-pressed="true"]{background:var(--brand);color:var(--brand-ink);border-color:var(--brand)}
-.slots button:disabled{opacity:.35;text-decoration:line-through;cursor:not-allowed}
-section{padding:44px 0}section>.wrap>h2{font-size:32px;margin-bottom:6px}.sub{color:var(--mute);margin:0 0 22px}
-.depts{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
-.dept{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:18px}.dept h4{font-size:19px;margin-bottom:4px}.dept p{margin:0;color:var(--mute);font-size:14px}
-.docs{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
-.doc{display:flex;gap:12px;align-items:center;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px}
-.av{width:46px;height:46px;border-radius:50%;background:var(--soft);display:grid;place-items:center;font:700 17px "Bricolage Grotesque";color:var(--brand);flex:none}
-.doc b{display:block}.doc span{color:var(--mute);font-size:14px}
-.ev{display:grid;grid-template-columns:64px 1fr auto;gap:16px;align-items:center;padding:16px;background:var(--panel);border:1px solid var(--line);border-radius:12px;margin-bottom:12px}
-.date{background:var(--soft);border-radius:8px;text-align:center;padding:7px 0;font-family:"Bricolage Grotesque";line-height:1.1}.date b{display:block;font-size:24px}.date span{font-size:12px;color:var(--mute)}
-.ev h4{font-size:18px}.ev p{margin:2px 0 6px;color:var(--mute);font-size:14px}
-.bar{height:6px;background:var(--soft);border-radius:3px;overflow:hidden;max-width:260px}.bar i{display:block;height:100%;background:var(--green)}.bar i.full{background:var(--amber)}
-.tag{display:inline-block;font-size:12px;font-weight:600;padding:2px 8px;border-radius:99px;background:var(--soft);color:var(--amber)}
-.ok{background:var(--soft);border:1px solid var(--green);border-radius:10px;padding:14px;color:var(--ink);margin-top:12px}
-footer{border-top:1px solid var(--line);padding:26px 0;color:var(--mute);font-size:14px}
-footer .wrap{display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px}
-.emerg{color:var(--red);font-weight:600}
-dialog{border:1px solid var(--line);border-radius:12px;background:var(--panel);color:var(--ink);width:min(460px,92vw);padding:20px}dialog::backdrop{background:rgba(0,0,0,.45)}
-.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:8px;font-size:14px;max-width:90%;z-index:9}
-@media(max-width:820px){.hero .wrap{grid-template-columns:1fr}.ev{grid-template-columns:54px 1fr}.ev>div:last-child{grid-column:1/-1}header nav{gap:14px}}
-@media(max-width:480px){form{grid-template-columns:1fr}}
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CareDesk - Hospital Management System</title>
+  <link rel="stylesheet" href="./style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="./config.js"></script>
 </head>
 <body>
-<header><div class="wrap"><a class="logo" href="#top">CareDesk Hospital</a>
-<nav aria-label="Sections"><a href="#book">Book a visit</a><a href="#departments">Departments</a><a href="#doctors">Doctors</a><a href="#events">Events</a></nav></div></header>
+  <!-- Navigation Header -->
+  <header class="app-header">
+    <div class="header-container">
+      <div class="logo">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>
+        </svg>
+        <span>CareDesk Hospital</span>
+      </div>
+      <nav class="nav-tabs">
+        <button class="nav-btn active" onclick="switchTab('patients', event)">Patients</button>
+        <button class="nav-btn" onclick="switchTab('appointments', event)">Appointments</button>
+        <button class="nav-btn" onclick="switchTab('records', event)">Medical Records</button>
+        <button class="nav-btn" onclick="switchTab('billing', event)">Billing</button>
+        <button class="nav-btn" onclick="switchTab('doctors', event)">Doctors</button>
+      </nav>
+    </div>
+  </header>
 
-<div class="hero" id="top"><div class="wrap">
- <div><h1>See a doctor. Join a health event.</h1>
- <p>Request an appointment in under a minute, and register for workshops, camps and lectures run by our hospital and college.</p>
- <a class="btn" href="#events">See upcoming events</a>
- <p style="margin:22px 0 0;font-size:15px">Emergency? Call <span class="emerg">108</span> or come straight to Casualty, open 24 hours.</p></div>
- <div class="card" id="book"><h3>Book an appointment</h3>
- <form id="bf" onsubmit="book(event)">
-  <label>Department<select id="dept"></select></label><label>Doctor<select id="doc"></select></label>
-  <label class="full">Date<input type="date" id="date" required></label>
-  <div class="full"><label>Time</label><div class="slots" id="slots" role="group" aria-label="Available times"></div></div>
-  <label>Your name<input id="pn" required maxlength="80" autocomplete="name"></label><label>Phone<input id="pp" type="tel" required maxlength="20" autocomplete="tel"></label>
-  <div class="full"><button class="btn">Request appointment</button></div></form>
-  <div id="bconf" aria-live="polite"></div></div>
-</div></div>
+  <!-- Notification Banner -->
+  <div id="alert-banner" class="alert-banner" style="display: none;"></div>
 
-<section id="departments"><div class="wrap"><h2>Departments</h2><p class="sub">Outpatient clinics are open Monday to Saturday, 9:00 to 17:00.</p><div class="depts" id="depts"></div></div></section>
-<section id="doctors" style="padding-top:0"><div class="wrap"><h2>Our doctors</h2><p class="sub">Pick a doctor to book directly.</p><div class="docs" id="docs"></div></div></section>
-<section id="events" style="padding-top:0"><div class="wrap"><h2>Upcoming events</h2><p class="sub">Free to attend. Full events have a waitlist, and you are moved up automatically if a seat opens.</p><div id="evlist"></div></div></section>
+  <main class="main-content">
+    <!-- 1. PATIENTS TAB -->
+    <section id="tab-patients" class="tab-pane active">
+      <div class="grid-layout">
+        <div class="card form-card">
+          <h2>Register Patient</h2>
+          <form id="patient-form" onsubmit="handleCreatePatient(event)">
+            <label>Full Name</label>
+            <input type="text" id="pt-name" required placeholder="Patient Name" />
 
-<footer><div class="wrap"><span>CareDesk Hospital · Bengaluru</span><span><a href="staff.html">Staff sign in</a></span></div></footer>
-<dialog id="dlg"></dialog><div id="toast" class="toast" role="status" hidden></div>
+            <div class="row">
+              <div>
+                <label>Age</label>
+                <input type="number" id="pt-age" required min="1" placeholder="30" />
+              </div>
+              <div>
+                <label>Gender</label>
+                <select id="pt-gender">
+                  <option value="Male">Male</option>
+                  <option value="Female">Female</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+            </div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="config.js"></script>
-<script>
-const cfg=window.CAREDESK_CONFIG||{};
-const configured=!!cfg.SUPABASE_URL&&!/YOUR-PROJECT/.test(cfg.SUPABASE_URL)&&!!cfg.SUPABASE_ANON_KEY&&!/YOUR-ANON/.test(cfg.SUPABASE_ANON_KEY);
-const sb=window.supabase.createClient(cfg.SUPABASE_URL||'https://example.supabase.co',cfg.SUPABASE_ANON_KEY||'none');
-if(!configured)document.body.insertAdjacentHTML('afterbegin','<div style="background:#b83f36;color:#fff;padding:10px 16px;text-align:center;font:600 14px sans-serif">Setup needed: open <code>config.js</code> and paste your Supabase project URL and anon key.</div>');
-const $=s=>document.querySelector(s);
-const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const iso=n=>{const d=new Date();d.setDate(d.getDate()+n);return d.toLocaleDateString('en-CA')};
-const DESC={Cardiology:'Heart checks, ECG and blood pressure care.',Orthopaedics:'Bones, joints and sports injuries.',Paediatrics:'Care for babies, children and teens.','General Medicine':'Fever, infections and everyday health concerns.'};
-let DOCS=[],EV=[],slot='',META={slots:[],taken:[],closed:false};
-function toast(t){const e=$('#toast');e.textContent=t;e.hidden=false;clearTimeout(toast.h);toast.h=setTimeout(()=>e.hidden=true,4500)}
-async function q(p){const {data,error}=await p;if(error)throw new Error(error.message||'Something went wrong. Please try again.');return data}
-const dateEl=$('#date');dateEl.min=iso(0);dateEl.value=iso(1);
+            <label>Phone / Contact</label>
+            <input type="text" id="pt-contact" required placeholder="Mobile Number" />
 
-/* doctors & departments */
-async function loadDoctors(){
- try{DOCS=await q(sb.from('doctors').select('id,name,dept').order('dept').order('name'))}catch(e){toast(e.message);return}
- const depts=[...new Set(DOCS.map(d=>d.dept))];
- $('#depts').innerHTML=depts.map(k=>`<div class="dept"><h4>${esc(k)}</h4><p>${esc(DESC[k]||'Outpatient clinic.')}</p></div>`).join('');
- $('#docs').innerHTML=DOCS.map(d=>`<div class="doc"><div class="av">${esc(d.name.split(' ').slice(1).map(x=>x[0]).join(''))}</div><div><b>${esc(d.name)}</b><span>${esc(d.dept)}</span><br><button class="btn ghost sm" style="margin-top:6px" onclick="pick(${d.id})">Book</button></div></div>`).join('');
- $('#dept').innerHTML=depts.map(d=>`<option>${esc(d)}</option>`).join('');
- fillDocs();
-}
-function fillDocs(sel){
- const l=DOCS.filter(d=>d.dept==$('#dept').value);
- $('#doc').innerHTML=l.map(d=>`<option value="${d.id}">${esc(d.name)}</option>`).join('');
- if(sel)$('#doc').value=sel;loadSlots();
-}
-async function loadSlots(){
- const d=$('#doc').value,dt=dateEl.value;if(!d||!dt)return;
- try{META=await q(sb.rpc('get_slots',{p_doctor:+d,p_date:dt}))}catch(e){toast(e.message);return}
- if(!META.slots.includes(slot)||META.taken.includes(slot))slot='';
- drawSlots();
-}
-function drawSlots(){
- $('#slots').innerHTML=META.closed?'<span style="color:var(--mute);font-size:14px">No clinic on this date (Sundays and past dates). Pick another date.</span>':META.slots.map(t=>`<button type="button" aria-pressed="${t==slot}" ${META.taken.includes(t)?'disabled':''} onclick="slot='${t}';drawSlots()">${t}</button>`).join('');
-}
-function pick(id){const d=DOCS.find(x=>x.id==id);$('#dept').value=d.dept;fillDocs(id);$('#book').scrollIntoView()}
-$('#dept').onchange=()=>fillDocs();$('#doc').onchange=loadSlots;dateEl.onchange=loadSlots;
+            <label>Assigned Doctor</label>
+            <select id="pt-doctor">
+              <option value="">Select Doctor...</option>
+              <option value="1">Dr. Sarah Chen (Cardiology)</option>
+              <option value="2">Dr. Marcus Vance (Pediatrics)</option>
+              <option value="3">Dr. Elena Rostova (Neurology)</option>
+              <option value="4">Dr. Kabir Shah (General Medicine)</option>
+              <option value="5">Dr. Arjun Nair (Orthopaedics)</option>
+            </select>
 
-async function book(ev){
- ev.preventDefault();
- if(!slot)return toast('Choose a time slot first.');
- try{
-  const doctor=await q(sb.rpc('request_appointment',{p_doctor:+$('#doc').value,p_date:dateEl.value,p_time:slot,p_name:$('#pn').value,p_phone:$('#pp').value}));
-  $('#bconf').innerHTML=`<div class="ok"><b>Request received.</b><br>${esc($('#pn').value)}, we have reserved ${esc(slot)} on ${esc(dateEl.value)} with ${esc(doctor)}. The hospital will confirm by phone or message. Please arrive 10 minutes early.</div>`;
-  slot='';$('#pn').value='';$('#pp').value='';
- }catch(e){toast(e.message)}
- loadSlots();
-}
+            <label>Status</label>
+            <select id="pt-status">
+              <option value="admitted">Admitted</option>
+              <option value="outpatient">Outpatient</option>
+            </select>
 
-/* events */
-async function loadEvents(){
- try{EV=await q(sb.from('public_events').select('*').gte('date',iso(0)).order('date').order('start_time'))}catch(e){$('#evlist').textContent='Could not load events. Please refresh.';return}
- $('#evlist').innerHTML=EV.map(e=>{const full=e.confirmed>=e.capacity,x=new Date(e.date+'T00:00');
- return `<div class="ev"><div class="date"><b>${x.getDate()}</b><span>${x.toLocaleString('en',{month:'short'})}</span></div>
- <div><h4>${esc(e.title)}</h4><p>${esc(e.start_time)}–${esc(e.end_time)} · ${esc(e.venue)} · ${esc(e.description)}</p>
- <div class="bar" role="img" aria-label="${e.confirmed} of ${e.capacity} seats filled"><i class="${full?'full':''}" style="width:${Math.min(100,e.confirmed/e.capacity*100)}%"></i></div>
- <p style="margin:4px 0 0">${Math.max(0,e.capacity-e.confirmed)} seats left${e.waitlist?` · ${e.waitlist} on waitlist`:''} ${full?'<span class="tag">Full</span>':''}</p></div>
- <div><button class="btn sm" onclick="openReg(${e.id})">${full?'Join waitlist':'Register'}</button></div></div>`}).join('')||'<p class="sub">No upcoming events right now. Check back soon.</p>';
-}
-function openReg(id){
- const e=EV.find(x=>x.id==id),full=e.confirmed>=e.capacity;
- $('#dlg').innerHTML=`<h3 style="font-size:22px">${esc(e.title)}</h3><p style="color:var(--mute)">${esc(e.date)} · ${esc(e.start_time)}–${esc(e.end_time)} · ${esc(e.venue)}</p>
- <form onsubmit="reg(event,${id})"><label class="full">Full name<input name="name" required maxlength="100"></label><label class="full">Email<input type="email" name="email" required></label>
- <label class="full">Department<select name="dept"><option>MBBS</option><option>Nursing</option><option>Pharmacy</option><option>Staff</option><option>Public</option></select></label>
- <div class="full" style="display:flex;gap:8px"><button class="btn">${full?'Join waitlist':'Register'}</button><button type="button" class="btn ghost" onclick="$('#dlg').close()">Cancel</button></div></form>`;
- $('#dlg').showModal();
-}
-async function reg(ev,id){
- ev.preventDefault();const f=Object.fromEntries(new FormData(ev.target));
- try{const r=await q(sb.rpc('register_for_event',{p_event:id,p_name:f.name,p_email:f.email,p_dept:f.dept}));$('#dlg').close();toast(r.waitlisted?'Event is full. You are on the waitlist.':'You are registered. See you there!');loadEvents()}
- catch(e){toast(e.message)}
-}
-loadDoctors();loadEvents();
-</script>
+            <button type="submit" class="btn btn-primary">Save Patient</button>
+          </form>
+        </div>
+
+        <div class="card list-card">
+          <h2>Patient Directory</h2>
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Patient</th>
+                <th>Age / Gender</th>
+                <th>Doctor</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="patients-table-body">
+              <tr><td colspan="5">Loading patients...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. APPOINTMENTS TAB -->
+    <section id="tab-appointments" class="tab-pane">
+      <div class="grid-layout">
+        <div class="card form-card">
+          <h2>Book Appointment</h2>
+          <form id="appointment-form" onsubmit="handleCreateAppointment(event)">
+            <label>Patient</label>
+            <select id="apt-patient" required>
+              <option value="">Select Patient...</option>
+            </select>
+
+            <label>Doctor</label>
+            <select id="apt-doctor" required>
+              <option value="">Select Doctor...</option>
+              <option value="1">Dr. Sarah Chen (Cardiology)</option>
+              <option value="2">Dr. Marcus Vance (Pediatrics)</option>
+              <option value="3">Dr. Elena Rostova (Neurology)</option>
+              <option value="4">Dr. Kabir Shah (General Medicine)</option>
+              <option value="5">Dr. Arjun Nair (Orthopaedics)</option>
+            </select>
+
+            <label>Date</label>
+            <input type="date" id="apt-date" required />
+
+            <label>Time Slot</label>
+            <select id="apt-time" required>
+              <option value="09:00:00">09:00 AM</option>
+              <option value="10:00:00">10:00 AM</option>
+              <option value="11:00:00">11:00 AM</option>
+              <option value="14:00:00">02:00 PM</option>
+              <option value="15:00:00">03:00 PM</option>
+              <option value="16:00:00">04:00 PM</option>
+            </select>
+
+            <button type="submit" class="btn btn-primary">Confirm Appointment</button>
+          </form>
+        </div>
+
+        <div class="card list-card">
+          <h2>Scheduled Appointments</h2>
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Patient</th>
+                <th>Doctor</th>
+                <th>Date & Time</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="appointments-table-body">
+              <tr><td colspan="4">Loading appointments...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. MEDICAL RECORDS TAB -->
+    <section id="tab-records" class="tab-pane">
+      <div class="grid-layout">
+        <div class="card form-card">
+          <h2>Add Medical Record</h2>
+          <form id="records-form" onsubmit="handleCreateRecord(event)">
+            <label>Patient</label>
+            <select id="rec-patient" required>
+              <option value="">Select Patient...</option>
+            </select>
+
+            <label>Doctor</label>
+            <select id="rec-doctor" required>
+              <option value="">Select Doctor...</option>
+              <option value="1">Dr. Sarah Chen (Cardiology)</option>
+              <option value="2">Dr. Marcus Vance (Pediatrics)</option>
+              <option value="3">Dr. Elena Rostova (Neurology)</option>
+              <option value="4">Dr. Kabir Shah (General Medicine)</option>
+              <option value="5">Dr. Arjun Nair (Orthopaedics)</option>
+            </select>
+
+            <label>Diagnosis</label>
+            <input type="text" id="rec-diagnosis" required placeholder="e.g. Hypertension Stage 1" />
+
+            <label>Prescription</label>
+            <textarea id="rec-prescription" required rows="2" placeholder="e.g. Amlodipine 5mg once daily"></textarea>
+
+            <label>Clinical Notes</label>
+            <textarea id="rec-notes" rows="2" placeholder="Dietary instructions, tests, etc."></textarea>
+
+            <button type="submit" class="btn btn-primary">Add Record</button>
+          </form>
+        </div>
+
+        <div class="card list-card">
+          <h2>Medical History & Records</h2>
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Patient</th>
+                <th>Doctor</th>
+                <th>Diagnosis</th>
+                <th>Prescription</th>
+                <th>Date</th>
+              </tr>
+            </thead>
+            <tbody id="records-table-body">
+              <tr><td colspan="5">Loading records...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. BILLING TAB -->
+    <section id="tab-billing" class="tab-pane">
+      <div class="grid-layout">
+        <div class="card form-card">
+          <h2>Generate Invoice</h2>
+          <form id="billing-form" onsubmit="handleCreateInvoice(event)">
+            <label>Patient</label>
+            <select id="bill-patient" required>
+              <option value="">Select Patient...</option>
+            </select>
+
+            <label>Description</label>
+            <input type="text" id="bill-desc" required placeholder="e.g. Consultation & Blood Test" />
+
+            <label>Amount (₹ / $)</label>
+            <input type="number" step="0.01" id="bill-amount" required placeholder="1500.00" />
+
+            <label>Status</label>
+            <select id="bill-status">
+              <option value="pending">Pending</option>
+              <option value="paid">Paid</option>
+            </select>
+
+            <button type="submit" class="btn btn-primary">Create Invoice</button>
+          </form>
+        </div>
+
+        <div class="card list-card">
+          <h2>Billing & Invoices</h2>
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Invoice #</th>
+                <th>Patient</th>
+                <th>Description</th>
+                <th>Amount</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="billing-table-body">
+              <tr><td colspan="6">Loading invoices...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. DOCTORS TAB -->
+    <section id="tab-doctors" class="tab-pane">
+      <div class="card list-card" style="max-width: 900px; margin: 0 auto;">
+        <h2>Doctor Directory</h2>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Department</th>
+              <th>Email</th>
+              <th>Phone</th>
+            </tr>
+          </thead>
+          <tbody id="doctors-table-body">
+            <tr><td colspan="4">Loading doctors...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <!-- Application Logic -->
+  <script>
+    const supabaseClient = window.supabase.createClient(
+      window.CAREDESK_CONFIG.SUPABASE_URL,
+      window.CAREDESK_CONFIG.SUPABASE_ANON_KEY
+    );
+
+    // Default hardcoded doctors so dropdowns and directory always show items
+    const DEFAULT_DOCTORS = [
+      { id: 1, name: 'Dr. Sarah Chen', department: 'Cardiology', email: 'schen@hospital.org', phone: '555-0101' },
+      { id: 2, name: 'Dr. Marcus Vance', department: 'Pediatrics', email: 'mvance@hospital.org', phone: '555-0102' },
+      { id: 3, name: 'Dr. Elena Rostova', department: 'Neurology', email: 'erostova@hospital.org', phone: '555-0103' },
+      { id: 4, name: 'Dr. Kabir Shah', department: 'General Medicine', email: 'kshah@hospital.org', phone: '555-0104' },
+      { id: 5, name: 'Dr. Arjun Nair', department: 'Orthopaedics', email: 'anair@hospital.org', phone: '555-0105' }
+    ];
+
+    let state = {
+      patients: [],
+      doctors: [...DEFAULT_DOCTORS],
+      appointments: [],
+      records: [],
+      billing: []
+    };
+
+    function notify(type, message) {
+      const banner = document.getElementById('alert-banner');
+      banner.style.display = 'block';
+      banner.className = `alert-banner ${type}`;
+      banner.innerText = message;
+      setTimeout(() => { banner.style.display = 'none'; }, 5000);
+    }
+
+    function switchTab(tabName, event) {
+      document.querySelectorAll('.tab-pane').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
+
+      document.getElementById(`tab-${tabName}`).classList.add('active');
+      if (event && event.target) {
+        event.target.classList.add('active');
+      }
+    }
+
+    async function loadAllData() {
+      try {
+        const [pRes, dRes, aRes, rRes, bRes] = await Promise.all([
+          supabaseClient.from('patients').select('*, doctors(name, department)').order('created_at', { ascending: false }),
+          supabaseClient.from('doctors').select('*').order('name'),
+          supabaseClient.from('appointments').select('*, patients(name), doctors(name)').order('appointment_date', { ascending: false }),
+          supabaseClient.from('medical_records').select('*, patients(name), doctors(name)').order('recorded_at', { ascending: false }),
+          supabaseClient.from('billing').select('*, patients(name)').order('invoice_date', { ascending: false })
+        ]);
+
+        state.patients = pRes.data || [];
+        // Use database doctors if available, otherwise keep default hardcoded ones
+        if (dRes.data && dRes.data.length > 0) {
+          state.doctors = dRes.data;
+        } else {
+          state.doctors = [...DEFAULT_DOCTORS];
+        }
+
+        state.appointments = aRes.data || [];
+        state.records = rRes.data || [];
+        state.billing = bRes.data || [];
+
+        renderDropdowns();
+        renderPatients();
+        renderAppointments();
+        renderRecords();
+        renderBilling();
+        renderDoctors();
+      } catch (err) {
+        notify('error', 'Database sync notice: ' + err.message);
+        renderDropdowns();
+        renderDoctors();
+      }
+    }
+
+    function renderDropdowns() {
+      // Doctor dropdowns
+      const docSelects = ['pt-doctor', 'apt-doctor', 'rec-doctor'];
+      docSelects.forEach(id => {
+        const sel = document.getElementById(id);
+        if (!sel) return;
+        const cur = sel.value;
+        sel.innerHTML = '<option value="">Select Doctor...</option>' + 
+          state.doctors.map(d => `<option value="${d.id}">${d.name} (${d.department})</option>`).join('');
+        if (cur) sel.value = cur;
+      });
+
+      // Patient dropdowns
+      const ptSelects = ['apt-patient', 'rec-patient', 'bill-patient'];
+      ptSelects.forEach(id => {
+        const sel = document.getElementById(id);
+        if (!sel) return;
+        const cur = sel.value;
+        sel.innerHTML = '<option value="">Select Patient...</option>' + 
+          state.patients.map(p => `<option value="${p.id}">${p.name} (#${p.id})</option>`).join('');
+        if (cur) sel.value = cur;
+      });
+    }
+
+    function renderPatients() {
+      const tbody = document.getElementById('patients-table-body');
+      if (state.patients.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5">No patients registered yet.</td></tr>';
+        return;
+      }
+      tbody.innerHTML = state.patients.map(p => {
+        const docName = p.doctors ? p.doctors.name : (state.doctors.find(d => d.id === p.assigned_doctor_id)?.name || 'Unassigned');
+        return `
+          <tr>
+            <td><strong>${p.name}</strong><br><small>${p.contact}</small></td>
+            <td>${p.age} y/o, ${p.gender}</td>
+            <td>${docName}</td>
+            <td><span class="badge ${p.status}">${p.status}</span></td>
+            <td>
+              ${p.status === 'admitted' ? `<button class="btn btn-sm" onclick="dischargePatient(${p.id})">Discharge</button>` : '-'}
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function renderAppointments() {
+      const tbody = document.getElementById('appointments-table-body');
+      if (state.appointments.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4">No appointments scheduled.</td></tr>';
+        return;
+      }
+      tbody.innerHTML = state.appointments.map(a => {
+        const ptName = a.patients ? a.patients.name : (state.patients.find(p => p.id === a.patient_id)?.name || 'Unknown');
+        const docName = a.doctors ? a.doctors.name : (state.doctors.find(d => d.id === a.doctor_id)?.name || 'Unknown');
+        return `
+          <tr>
+            <td><strong>${ptName}</strong></td>
+            <td>${docName}</td>
+            <td>${a.appointment_date} at ${(a.appointment_time || '').slice(0, 5)}</td>
+            <td><span class="badge ${a.status}">${a.status}</span></td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function renderRecords() {
+      const tbody = document.getElementById('records-table-body');
+      if (state.records.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5">No medical records entered.</td></tr>';
+        return;
+      }
+      tbody.innerHTML = state.records.map(r => {
+        const ptName = r.patients ? r.patients.name : (state.patients.find(p => p.id === r.patient_id)?.name || 'Unknown');
+        const docName = r.doctors ? r.doctors.name : (state.doctors.find(d => d.id === r.doctor_id)?.name || 'Unknown');
+        return `
+          <tr>
+            <td><strong>${ptName}</strong></td>
+            <td>${docName}</td>
+            <td>${r.diagnosis}</td>
+            <td><code>${r.prescription}</code></td>
+            <td><small>${new Date(r.recorded_at).toLocaleDateString()}</small></td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function renderBilling() {
+      const tbody = document.getElementById('billing-table-body');
+      if (state.billing.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6">No invoices created.</td></tr>';
+        return;
+      }
+      tbody.innerHTML = state.billing.map(b => {
+        const ptName = b.patients ? b.patients.name : (state.patients.find(p => p.id === b.patient_id)?.name || 'Unknown');
+        return `
+          <tr>
+            <td>#INV-${b.id}</td>
+            <td><strong>${ptName}</strong></td>
+            <td>${b.description}</td>
+            <td>₹${parseFloat(b.amount).toFixed(2)}</td>
+            <td><span class="badge ${b.status}">${b.status}</span></td>
+            <td>
+              ${b.status === 'pending' ? `<button class="btn btn-sm" onclick="markPaid(${b.id})">Mark Paid</button>` : '✓ Settled'}
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function renderDoctors() {
+      const tbody = document.getElementById('doctors-table-body');
+      tbody.innerHTML = state.doctors.map(d => `
+        <tr>
+          <td><strong>${d.name}</strong></td>
+          <td>${d.department}</td>
+          <td>${d.email}</td>
+          <td>${d.phone || '-'}</td>
+        </tr>
+      `).join('');
+    }
+
+    async function handleCreatePatient(e) {
+      e.preventDefault();
+      const docId = document.getElementById('pt-doctor').value;
+      const { error } = await supabaseClient.from('patients').insert([{
+        name: document.getElementById('pt-name').value,
+        age: parseInt(document.getElementById('pt-age').value),
+        gender: document.getElementById('pt-gender').value,
+        contact: document.getElementById('pt-contact').value,
+        assigned_doctor_id: docId ? parseInt(docId) : null,
+        status: document.getElementById('pt-status').value
+      }]);
+
+      if (error) return notify('error', error.message);
+      notify('success', 'Patient registered successfully!');
+      document.getElementById('patient-form').reset();
+      loadAllData();
+    }
+
+    async function handleCreateAppointment(e) {
+      e.preventDefault();
+      const { error } = await supabaseClient.from('appointments').insert([{
+        patient_id: parseInt(document.getElementById('apt-patient').value),
+        doctor_id: parseInt(document.getElementById('apt-doctor').value),
+        appointment_date: document.getElementById('apt-date').value,
+        appointment_time: document.getElementById('apt-time').value,
+        status: 'scheduled'
+      }]);
+
+      if (error) {
+        return notify('error', error.code === '23505' ? 'Doctor already has an appointment booked for this slot.' : error.message);
+      }
+      notify('success', 'Appointment booked successfully!');
+      document.getElementById('appointment-form').reset();
+      loadAllData();
+    }
+
+    async function handleCreateRecord(e) {
+      e.preventDefault();
+      const { error } = await supabaseClient.from('medical_records').insert([{
+        patient_id: parseInt(document.getElementById('rec-patient').value),
+        doctor_id: parseInt(document.getElementById('rec-doctor').value),
+        diagnosis: document.getElementById('rec-diagnosis').value,
+        prescription: document.getElementById('rec-prescription').value,
+        notes: document.getElementById('rec-notes').value
+      }]);
+
+      if (error) return notify('error', error.message);
+      notify('success', 'Medical record added!');
+      document.getElementById('records-form').reset();
+      loadAllData();
+    }
+
+    async function handleCreateInvoice(e) {
+      e.preventDefault();
+      const { error } = await supabaseClient.from('billing').insert([{
+        patient_id: parseInt(document.getElementById('bill-patient').value),
+        description: document.getElementById('bill-desc').value,
+        amount: parseFloat(document.getElementById('bill-amount').value),
+        status: document.getElementById('bill-status').value
+      }]);
+
+      if (error) return notify('error', error.message);
+      notify('success', 'Invoice generated!');
+      document.getElementById('billing-form').reset();
+      loadAllData();
+    }
+
+    async function dischargePatient(id) {
+      await supabaseClient.from('patients').update({ status: 'discharged' }).eq('id', id);
+      notify('success', 'Patient discharged.');
+      loadAllData();
+    }
+
+    async function markPaid(id) {
+      await supabaseClient.from('billing').update({ status: 'paid' }).eq('id', id);
+      notify('success', 'Invoice updated to Paid.');
+      loadAllData();
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      renderDropdowns();
+      renderDoctors();
+      loadAllData();
+    });
+  </script>
 </body>
 </html>
